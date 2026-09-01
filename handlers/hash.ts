@@ -1,6 +1,6 @@
 
 
-export function hashGoogleSub(googleSub: string): string {
+export default function hashGoogleSub(googleSub: string): string {
 
     const pepper = Bun.env.GOOGLE_SUB_PEPPER;
 

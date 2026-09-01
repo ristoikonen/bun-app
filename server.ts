@@ -6,6 +6,8 @@ import { Auth } from "./auth";
 import { S3Client,s3 } from "bun";// "@aws-sdk/client-s3";
 import handleUpload from './handlers/upload';
 import askGemini, { analyseGeminiBase64,askGeminiImageQuestion } from './services/ask_gemini';
+import testHashAndVerifyUserWithBackend from './services/security';
+import verifyUserWithBackend from './handlers/verify'
 import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
 const IMAGES_DIR = "./images";
@@ -16,7 +18,27 @@ const RECT1_PNG = "./images/rect1.png";
 const apiBaseUrl = process.env.services__apiservice__http__1;
 
 (async function main() {
+    const theArgs = Bun.argv.slice(1);
+    console.log("Mains params:", theArgs);
+
+    // Testing hashing with sub key
+    const hashrunArg = theArgs.find(arg => arg.startsWith("--hashtest="));
+    
+    let isHashrun: boolean = false;
+    if (hashrunArg) {
+        const runHashTest = hashrunArg.split("=")[1];  
+        isHashrun = runHashTest === "true"; 
+    }
+    if(isHashrun)
+    {
+        
+        testHashAndVerifyUserWithBackend('abc');
+        process.exitCode = 0;
+        return;
+    }
+
     const port = Number(Bun.env.PORT ?? 3000);
+
     const files = await readdir(IMAGES_DIR);
     //console.log(`API Base URL: ${apiBaseUrl}`);
     const apiKey = Bun.env.GEMINI_API_KEY;
@@ -152,7 +174,22 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
             );
             const jwtCookie = cookies["auth_token"];
 
+            //TODO: TEST THIS!
+            if (url.pathname === "/auth/callback") {
+                const code = url.searchParams.get("code");
+                const error = url.searchParams.get("error");
+                
+                verifyUserWithBackend(code || '');
 
+                if (error) {
+                    return new Response(`Google Auth Error: ${error}`, { status: 400 });
+                }
+
+                if (!code) {
+                    return new Response("Missing authorization code from Google.", { status: 400 });
+                }
+
+            }
             // ----------------------------------------------------
             // ROUTE - Mock Callback (Simulating successful Google Login)
             // ----------------------------------------------------
