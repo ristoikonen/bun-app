@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #fffafb;
+            --card-bg: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --primary: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 20px;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--bg-color);
+            
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 24px;
+        }
+
+        
+        .logos-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            height: 150px;
+        }
+
+
+        .logo-container {
+            width: 120px;  
+            height: 120px; 
+
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        .container {
+            max-width: 700px;
+            margin-inline: auto;
+            background: white;
+            }
+
+        .step {
+            display: none;
+            padding: 2rem;
+            min-height: 300px;
+
+        &.active {
+                display: block;
+            }
+            }
+
+        .form-group {
+            margin-block: 1rem;
+            }
+
+        .buttons {
+            margin-block-start: 2rem;
+            margin-inline-start: auto;
+            width: fit-content;
+            }
+
+        #progressBar {
+            height: 100%;
+            width: 0;
+            background: var(--color-primary);
+            transition: width 1s ease;
+            height: 4px;
+            }
+
+
+
+        .progress-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        margin: 30px auto;
+        }
+
+        /* Background grey track line */
+        .progress-container::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        height: 4px;
+        width: 100%;
+        background-color: #e0e0e0;
+        z-index: 1;
+        }
+
+        /* Dynamic active blue fill line */
+        .progress-bar {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        height: 4px;
+        width: 0%;
+        background-color: #007bff;
+        z-index: 2;
+        transition: width 0.3s ease;
+        }
+
+        /* Circular step indicators */
+        .step-indicator {
+        width: 35px;
+        height: 35px;
+        background-color: #fff;
+        border: 2px solid #e0e0e0;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        color: #777;
+        z-index: 3;
+        transition: all 0.3s ease;
+        }
+
+        /* Active and completed state styling */
+        .step-indicator.active {
+        border-color: #007bff;
+        background-color: #007bff;
+        color: #fff;
+        }
+
+
+    </style>
+</head>
+<body>
+
+   
+<div class="container">
+    <div id="left-side">
+        <div id="progressBar"></div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="step-indicator active" data-step="1">1</div>
+            <div class="step-indicator" data-step="2">2</div>
+            <div class="step-indicator" data-step="3">3</div>
+            <div class="step-indicator" data-step="4">4</div>
+        </div>
+
+        <label for="stepno">STEPNO</label>
+        <input type="text" id="stepno" />
+    </div>
+
+  <div class="content">
+    <form action="/submit_form" method="POST" enctype="multipart/form-data">
+    <!-- Step 1: Contact Info -->
+    <div class="step active" id="step1">
+      <h2>Contact Information</h2>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" data-id='{"localstorage": true, "type": "basic"}'  />
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone"  />
+      </div>
+      <div class="buttons">
+        <button class="button" type="button" onclick="nextStep()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Shipping Info -->
+    <div class="step" id="step2">
+      <h2>Shipping Address</h2>
+      <div class="form-group">
+        <label for="address">Street Address</label>
+        <input type="text" id="address"  />
+      </div>
+      <div class="form-group">
+        <label for="town-city">Town/City</label>
+        <input type="text" id="town-city"  />
+      </div>
+      <div class="form-group">
+        <label for="postcode">Postcode</label>
+        <input type="text" id="postcode"  />
+      </div>
+      <div class="buttons">
+        <button class="button" type="button" data-button-variant='secondary' onclick="prevStep()">Back</button>
+        <button class="button" type="button" onclick="nextStep()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Payment Info -->
+    <div class="step" id="step3">
+      <h2>Payment Information</h2>
+      <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456"  />
+      </div>
+      <div class="form-group">
+        <label for="expiry">Expiry Date</label>
+        <input type="text" id="expiry" placeholder="MM/YY"  />
+      </div>
+      <div class="form-group">
+        <label for="security-code">Security Code</label>
+        <input type="text" id="security-code" placeholder="123" required />
+      </div>
+      <div class="buttons">
+        <button class="button" type="button" data-button-variant='secondary' onclick="prevStep()">Back</button>
+        <button class="button" type="button" onclick="nextStep()">Complete Form</button> 
+        <button type="submit">Submit</button>
+      </div>
+    </div>
+
+    
+
+    <!-- Step 4: Confirmation -->
+    <div class="step" id="step4">
+      <h2>Data storage Confirmed!</h2>
+      <p>Thank you for your details. You'll receive a confirmation email shortly.</p>
+      <p id="emailText"></p>
+      <p id="emailLocalStorege"></p>
+      <h5 id="emailText_h5"></h5>
+      <p>Your order number is: <strong>#12345</strong></p>
+      <div class="buttons">
+        <button class="button" type="button" data-button-variant='secondary' onclick="prevStep()">Back</button>
+        <button class="button" type="button" onclick="startOver()">Start Over</button>
+
+        
+        <!-- <button type="submit">Submit</button> <button class="button" onclick="startOver()">Start New Order</button> -->
+      </div>
+    </div>
+    
+    </form>
+
+  </div>
+</div>
+
+<script>
+
+
+// const activeItem = document.querySelector('[data-id="456"]');
+
+let currentStep = 1;
+const totalSteps = 4;
+let isGoingBack = false;
+let emailText = "";
+
+function updateProgress() {
+
+  const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+  document.getElementById("progressBar").style.width = progress + "%";
+  document.getElementById("progressBar").style.width = progress + "%";
+
+  //const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+  //progressLineBar.style.width = progressPercentage + '%';
+
+}
+
+function showStep(stepNumber) {
+
+    const indicators = document.querySelectorAll('.step-indicator');
+
+    indicators.forEach((indicator, index) => {
+      if (index < currentStep) {
+        indicator.classList.add('active');
+      } else {
+        indicator.classList.remove('active');
+      }
+    });
+
+
+  // Hide all steps
+  document.querySelectorAll(".step").forEach((step) => {
+    step.classList.remove("active");
+  });
+
+  // Show current step
+  document.getElementById(`step${stepNumber}`).classList.add("active");
+
+  emailText = document.getElementById(`email`).value ?? "";
+
+  // debug
+  document.getElementById(`stepno`).value = "step" + stepNumber;
+
+    document.getElementById(`emailText`).innerText  = emailText ?? '';
+ document.getElementById(`emailText_h5`).innerText  = document.getElementById(`address`).value ?? "";
+
+ const emaildataset = JSON.parse(document.getElementById(`email`).dataset.id);
+ //console.log(emaildataset.localstorage); 
+ document.getElementById(`emailLocalStorege`).innerText  = emaildataset.localstorage ?? "";
+
+  updateProgress();
+}
+
+//Pages initial values
+window.addEventListener('DOMContentLoaded', () => {
+    // set step1
+    const myInput = document.getElementById('stepno');
+    
+    // 2. Set its value
+    if (myInput) {
+        myInput.value = "step1";
+    }
+});
+
+
+function showStepX(stepNumber) {
+  // Hide all steps
+  document.querySelectorAll(".step").forEach((step) => {
+    step.classList.remove("active");
+  });
+
+  // Show current step
+  document.getElementById(`stepno`).text.add("step");
+
+  //document.getElementById(`emailText`).text.add(emailText ??'');
+
+  updateProgress();
+}
+
+function nextStep() {
+  //if (currentStep === totalSteps) {
+  //  alert('sdfsdf');
+  //}
+  if (currentStep < totalSteps) {
+    isGoingBack = false;
+    transitionToStep(currentStep + 1);
+  }
+
+
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    isGoingBack = true;
+    transitionToStep(currentStep - 1);
+  }
+}
+
+function startOver() {
+  isGoingBack = false;
+  transitionToStep(1);
+}
+
+function transitionToStep(stepNumber) {
+  currentStep = stepNumber;
+  showStep(currentStep);
+}
+
+updateProgress();
+
+</script>
+</body>
+</html>
