@@ -2,7 +2,7 @@
 
 export function hashGoogleSub(googleSub: string): string {
 
-    const pepper = process.env.GOOGLE_SUB_PEPPER;
+    const pepper = Bun.env.GOOGLE_SUB_PEPPER;
 
     if (!pepper) {
         throw new Error("Critical Security Error: GOOGLE_SUB_PEPPER environment variable is missing.");

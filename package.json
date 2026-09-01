@@ -6,6 +6,7 @@
     "dev": "bun run --watch server.ts"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.0",
     "bun-types": "*"
   },
   "dependencies": {
