@@ -1,8 +1,7 @@
 # My Bun & TypeScript App
 
-A web application built using [Bun](https://bun.sh) and TypeScript.
-Analyses images with Gemini.
-Upload handler:
+Simple HTTP server application built using [Bun](https://bun.sh) and TypeScript.  
+Analyses images with Gemini. Image upload handler code:
  - Validates image and metadata
  - Generates filename
  - Saves original image into UPLOAD_DIR 

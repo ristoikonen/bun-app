@@ -8,14 +8,16 @@ import handleUpload from './handlers/upload';
 import askGemini, { analyseGeminiBase64,askGeminiImageQuestion } from './services/ask_gemini';
 import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
+const IMAGES_DIR = "./images";
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
+const RECT1_PNG = "./images/rect1.png";
 
 const apiBaseUrl = process.env.services__apiservice__http__1;
 
 (async function main() {
     const port = Number(Bun.env.PORT ?? 3000);
-    const files = await readdir("./images");
+    const files = await readdir(IMAGES_DIR);
     //console.log(`API Base URL: ${apiBaseUrl}`);
     const apiKey = Bun.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -67,17 +69,17 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
     const imagesfilenames: Array<string> = [];
 
     const glob = new Glob("*");
-    for (const file of glob.scanSync("./images")) {
+    for (const file of glob.scanSync(IMAGES_DIR)) {
         console.log(file);
         console.log('glob');
-        imagesfilenames.push("./images/" + file);
+        imagesfilenames.push(IMAGES_DIR + "/" + file);
     }
     
     //const color1 = Bun.color([255, 99, 71, 255])
     //const { width, height, format } = await new Bun.Image(imageFile).metadata();
 
     const bunimages: Array<Bun.Image> = [];
-    const fileArrayData = Bun.file("rect1.png");
+    const fileArrayData = Bun.file(RECT1_PNG);
     const image1 = new Bun.Image(await fileArrayData.arrayBuffer());
     const base64String = await image1.toBase64();
 
@@ -272,10 +274,10 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                             return new Response("submit_form", {
                                 headers: { "Content-Type": "text/html" },
                             });
-                                                case '/submit_form':
-                        return new Response("submit_newclient", {
-                            headers: { "Content-Type": "text/html" },
-                        });
+                        case '/submit_form':
+                            return new Response("submit_newclient", {
+                                headers: { "Content-Type": "text/html" },
+                            });
                     }
                 case 'GET':
                     switch (url.pathname) {
@@ -286,7 +288,7 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                             
                             const fileArrayData2 = Bun.file("rect2.png");
                             const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
-                            var res= await askGeminiImageQuestion(ai,"Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains",image2) ?? "No analysis";
+                            var res = await askGeminiImageQuestion(ai,"Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains",image2) ?? "No analysis";
                             
                             return new Response(body  + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" 
                                 + res, {
@@ -307,7 +309,22 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                                 return new Response(String(newclientForm), {
                                     headers: { "Content-Type": "text/html" },
                                 });
-                            
+                            case '/testupload':
+
+                                const fileData = Bun.file("rect2.png");
+                                const blob = new Blob([await fileData.arrayBuffer()], { type: fileData.type });
+                                const formData = new FormData();
+                                formData.append("image", blob, "test.jpg");
+
+                                const req = new Request("http://localhost/upload", {
+                                    method: "POST",
+                                    body: formData,
+                                });
+
+                                const response = await handleUpload(req);
+                                return new Response(response.body, {
+                                    headers: { "Content-Type": response.headers.get("content-type") ?? "text/html" },
+                                });
                     }
                 default:
                     return new Response('Not Found', {

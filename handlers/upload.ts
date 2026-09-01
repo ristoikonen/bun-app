@@ -6,6 +6,8 @@ import { Glob } from "bun";
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from "../services/ask_gemini";
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
+const THUMB_SIZE_PX = 150;
+const THUMB_QUALITY = 80;
 
 
 export default async function handleUpload(req: Request): Promise<Response>
@@ -35,40 +37,29 @@ export default async function handleUpload(req: Request): Promise<Response>
                         meta.format === "bmp" ? "bmp" :
                             null;
 
-        // Generate filename
-        //const ext = meta.format === "jpeg" ? "jpg" : meta.format;
+        // Generate filename from date
         const filename = `${Date.now()}.${fileext || "image"}`;
 
-        // Save original
+        // Save original to upload dir
         await Bun.file(`${UPLOAD_DIR}/${filename}`).write(buffer);
 
-
-        // Generate thumbnail (400px wide, maintaining aspect ratio)
+        // Generate thumbnail maintaining aspect ratio
         await image
-            .resize(400)
-            .jpeg({ quality: 80 })
+            .resize(THUMB_SIZE_PX)
+            .jpeg({ quality: THUMB_QUALITY })
             .write(`${THUMB_DIR}/${filename}`);
 
    /*
+        //TODO, maybe: AI analysis => Put rect into squares directory, round image objects into 'circles' dir.
         const yn_answer = await analGeminiBse64("Is this image a rectagle? Answer with just one word: Yes/No.", image);
         console.log("Gemini answer:" + yn_answer);
-
         if (yn_answer.trim().toLowerCase() === "yes") {
             await image
                 .resize(400)
                 .jpeg({ quality: 80 })
                 .write(`${THUMB_DIR}/squares/${filename}`);
         }
-        else
-        {
-            await image
-                .resize(400)
-                .jpeg({ quality: 80 })
-                .write(`${THUMB_DIR}/${filename}`);
-        }
-
     */   
-
 
         // Generate placeholder for blur-up
         const placeholder = await image.placeholder();
@@ -76,9 +67,9 @@ export default async function handleUpload(req: Request): Promise<Response>
 
         //TODO: add dynamic data string!
         const thumbimageHTML = `<img src="data:image/png;base64,${base64}" alt="Inlined Image" />`;
-        const placeholderHTML = `<img src="data:image/png;base64,${placeholder}" alt="Inlined Image" />`;
-        
-        return new Response('<h1>Images</h1>' + thumbimageHTML + '<br/>' + placeholderHTML, {
+        const placeholderHTMLloading = `<img src="${placeholder}" alt="Placeholder Image" />`;
+
+        return new Response('<p>' + thumbimageHTML + '<br/>Thumb</p><br/><br/><p>' + placeholderHTMLloading + '<br/>Placeholder</p>', {
             headers: { "Content-Type": "text/html" },
         });
     }
