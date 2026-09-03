@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google ID Token Retriever</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #fffafb;
+            --card-bg: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --primary: #0f172a;
+        }
+
+      
+
+    </style>
+
+     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+</head>
+<body>
+
+<div class="container">
+  
+
+    <h2>Sign in to get your ID Token</h2>
+    
+    <!-- 2. This container is where Google will draw the sign-in button -->
+    <div id="googleButtonDiv"></div>
+
+</div>
+
+  
+<script>
+
+    // replacement variables
+    const clid = "__GOOGLE_CLIENT_ID__";
+    const port = "__PORT__";
+
+    // This function triggers automatically after a successful sign-in
+    async function handleCredentialResponse(response) {
+        try {
+            const uri = "http://localhost:" + port + "/api/auth/google";
+            const res = await fetch(uri, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ credential: response.credential }),
+            });
+
+            if (!res.ok) {
+            throw new Error(`Server responded with status ${res.status}`);
+            }
+
+            const data = await res.json();
+            console.log("Success:", data);
+        } catch (error) {
+            console.error("Fetch failed:", error);
+        }
+    }
+
+
+    // This function triggers automatically after a successful sign-in
+    async function handleCredentialResponseOld(response) {
+        // Google wraps the ID Token (JWT) inside response.credential
+        //console.log(response);
+        const idToken = response.credential;
+        const localuri = "http://localhost:" + port + "/profile";
+        
+        console.log("🔒 Raw Google ID Token successfully retrieved:");
+        console.log(idToken);
+
+        // Send this ID token to your Bun API endpoint for validation
+        try {
+            //const apiResponse = await fetch("http://localhost:3001/api/auth/google/verify", {
+            const apiResponse = await fetch(localuri, {
+                
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ token: idToken })
+            });
+
+            const data = await apiResponse.json();
+            console.log("Backend response:", data);
+        } catch (error) {
+            console.error("Failed to forward ID token to backend:", error);
+        }
+    }
+
+    // Initialize the button once the window finishes loading
+    window.onload = function () {
+        window.google.accounts.id.initialize({
+            client_id: clid, 
+            callback: handleCredentialResponse // Bind the function above
+        });
+
+        // Render the authentic styled Google Sign-In button widget
+        window.google.accounts.id.renderButton(
+            document.getElementById("googleButtonDiv"),
+            { theme: "outline", size: "large", type: "standard" , text: "sign_in_with", logo_alignment: "left"} 
+        );
+        
+        // Optional: Automatically display the "One Tap" floating login prompt
+        window.google.accounts.id.prompt(); 
+    };
+
+</script>
+</body>
+</html>

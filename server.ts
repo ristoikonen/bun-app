@@ -10,12 +10,15 @@ import testHashAndVerifyUserWithBackend from './services/security';
 import verifyUserWithBackend from './handlers/verify'
 import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
+import testformPage from "./pages/testform.html" with { type: "text" };
+import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 const IMAGES_DIR = "./images";
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
 const RECT1_PNG = "./images/rect1.png";
 
 const apiBaseUrl = process.env.services__apiservice__http__1;
+const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
 (async function main() {
     const theArgs = Bun.argv.slice(1);
@@ -149,23 +152,6 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
             const url = new URL(req.url);
             //console.log(`Request URL:${url.toString()}`);
 
-            // ----  Token Rotation  ---------------------------------------------------------------------
-
-            // ----  Mocked Google this far => Below 4 real  -------------------------------------------------------
-
-            /*
-            // Route 1: Direct user to Google Login Screen
-            if (url.pathname === "/login") {
-                const googleAuthUrl = `https://google.com?` +
-                    `client_id=${CLIENT_ID}` +
-                    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-                    `&response_type=code` +
-                    `&scope=${encodeURIComponent("openid email profile")}` + // Request identity & profile
-                    `&access_type=offline`;
-
-                return Response.redirect(googleAuthUrl);
-            }
-            */
 
             // Parse existing cookies from the request headers
             const cookieHeader = req.headers.get("Cookie") || "";
@@ -188,97 +174,13 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                 if (!code) {
                     return new Response("Missing authorization code from Google.", { status: 400 });
                 }
-
-            }
-            // ----------------------------------------------------
-            // ROUTE - Mock Callback (Simulating successful Google Login)
-            // ----------------------------------------------------
-            if (url.pathname === "/callback") {
-
-                //  Handle the callback code sent by Google after login
-                //const code = url.searchParams.get("code");
-                //if (!code) {
-                //    return new Response("Missing authorization code", { status: 400 });
-                //}
-                /*
-                      try {
-                        // Exchange authorization code for an Access Token
-                        const tokenResponse = await fetch("https://googleapis.com", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                          body: new URLSearchParams({
-                            code,
-                            client_id: CLIENT_ID,
-                            client_secret: CLIENT_SECRET,
-                            redirect_uri: REDIRECT_URI,
-                            grant_type: "authorization_code",
-                          }),
-                        });
-
-                        const tokenData = await tokenResponse.json() as { access_token: string };
-        
-                        if (!tokenData.access_token) {
-                          return new Response("Failed to retrieve access token", { status: 400 });
-                        }
-
-                       // Use Access Token to fetch Profile Data from Google UserInfo Endpoint
-                        const profileResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-                          headers: {
-                            Authorization: `Bearer ${tokenData.access_token}`, // Pass token here
-                          },
-                        });
-
-                        const userProfile = await profileResponse.json();
-
-                        // Return the clean profile data directly to the user
-                        //TODO: add some user info to variable, create userprofile HTML
-                        return new Response(JSON.stringify(userProfile, null, 2), {
-                          headers: { "Content-Type": "application/json" },
-                        });
-
-                      } catch (error) {
-                        console.error(error);
-                        return new Response("Internal Server Error during Authentication", { status: 500 });
-                      }
-                    }
-
-                    // Default Fallback Route
-                    //TODO: add some user info to variable, create userprofile HTML
-                    return new Response(`<h1>Welcome</h1><a href="/login">Login with Google</a>`, {
-                        headers: { "Content-Type": "text/html" },
-                    });
-
-                */
-                // These values would normally come from Google's UserInfo API response
-                const mockGoogleSub = "104829019283019283019";
-                const mockEmail = "johndoe@gmail.com";
-
-                // Securely sign the user payload
-                const token = await Auth.createToken({
-                    googleSub: mockGoogleSub,
-                    email: mockEmail
-                });
-
-                const response = new Response("Logged in successfully! Navigate to /profile");
-
-                // Attach the token as a highly hardened cookie
-                response.headers.append(
-                    "Set-Cookie",
-                    `auth_token=${token}; ` +
-                    `HttpOnly; ` +       // Prevents client-side JS/XSS scripts from stealing it
-                    `Secure; ` +         // Sent only over HTTPS
-                    `SameSite=Strict; ` +// Full protection against CSRF cross-site attacks
-                    `Max-Age=${60 * 60 * 24}; ` + // 24 hours lifecycle
-                    `Path=/`
-                );
-
-                return response;
             }
 
-            // ----------------------------------------------------
-            // ROUTE - Protected Profile Route
-            // ----------------------------------------------------
+            //TODO: Profile page
             if (url.pathname === "/profile") {
+
+                console.error('profile handling');
+
                 if (!jwtCookie) {
                     return new Response("Unauthorized: No session found", { status: 401 });
                 }
@@ -315,7 +217,17 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                             return new Response("submit_newclient", {
                                 headers: { "Content-Type": "text/html" },
                             });
+                        case '/api/auth/google':
+                            const body = await req.json();
+                            const { credential } = body; // This is the Google token from the front
+                            console.log("Received Google credential:", credential);
+                            return Response.json({ success: true, message: "Authenticated successfully" });
+
+                            //return new Response("submit_newclient", {
+                            //    headers: { "Content-Type": "text/html" },
+                            //});
                     }
+                     return new Response('Not Found', { status: 404  })
                 case 'GET':
                     switch (url.pathname) {
 
@@ -326,7 +238,7 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                             const fileArrayData2 = Bun.file("rect2.png");
                             const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
                             var res = await askGeminiImageQuestion(ai,"Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains",image2) ?? "No analysis";
-                            
+                            //TODO: clean up!
                             return new Response(body  + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" 
                                 + res, {
                                 headers: { "Content-Type": "text/html" },
@@ -337,6 +249,11 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                             });
                             */
 
+                            case '/testform':
+                                return new Response(String(testformPage), {
+                                    headers: { "Content-Type": "text/html" },
+                                });
+
                             case '/submit_form':
                                 return new Response(String(registrationForm), {
                                     headers: { "Content-Type": "text/html" },
@@ -344,6 +261,14 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                             
                             case '/newclient':
                                 return new Response(String(newclientForm), {
+                                    headers: { "Content-Type": "text/html" },
+                                });
+                            case '/googletoken':
+                                //set replacement variabes
+                                const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
+                                const sport = Bun.env.port || "";
+                                const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", clientID).replace("__PORT__", sport);
+                                return new Response(renderedHtml, {
                                     headers: { "Content-Type": "text/html" },
                                 });
                             case '/testupload':
@@ -363,6 +288,7 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
                                     headers: { "Content-Type": response.headers.get("content-type") ?? "text/html" },
                                 });
                     }
+                    return new Response('Not Found', { status: 404  })
                 default:
                     return new Response('Not Found', {
                         status: 404
