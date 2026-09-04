@@ -4,9 +4,10 @@ import { readdir, mkdir } from "node:fs/promises";
 import { Glob } from "bun";
 import { Auth } from "./auth";
 import { S3Client,s3 } from "bun";
-import handleUpload from './handlers/upload';
 import askGemini, { analyseGeminiBase64,askGeminiImageQuestion } from './services/ask_gemini';
 import testHashAndVerifyUserWithBackend from './services/security';
+import getCookie from './services/cookie';
+import handleUpload from './handlers/upload';
 import verifyUserWithBackend from './handlers/verify'
 import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
@@ -57,7 +58,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
     const ai = new GoogleGenAI();
 
-        const corsHeaders = {
+    const corsHeaders = {
         "Access-Control-Allow-Origin": "*", // Change to specific origin in production, e.g., "http://127.0.0.1:5500"
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -65,11 +66,11 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
 
     interface IUserProfile {
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-}
+        firstName: string;
+        lastName: string;
+        email: string;
+        username: string;
+    }
 
     const UserProfile: IUserProfile = {
         firstName: "Mark",
@@ -89,6 +90,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     cookieHeader.split("; ").map(c => c.split("="))
                 );
                 const jwtCookie = cookies["auth_token"];
+
+                const token = getCookie(req, "auth_token");
+                if (!token) {
+                    console.log(`token: ${token} (${jwtCookie})`);
+                }
+
 
                 /*
                 if (req.method === "OPTIONS") {
