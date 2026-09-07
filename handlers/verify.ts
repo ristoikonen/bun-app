@@ -5,6 +5,13 @@
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
+/*
+Get
+User access token - 1H bearer token for API calls
+Refresh token     - Long-lived token-granting token stored by your application.It isn't used to call APIs directly, can be redeemed later to obtain a new User access token when the old one expires.
+ID Token          - If requested, User ID token. If your OAuth scopes include OpenID Connect (openid or email); JWT identity token that lets your client application identify the user (e.g., extracting their email or profile info).
+*/ 
+
 export default async function verifyUserWithBackend(code: string) {
     
     const googleClientSecret = Bun.env.GOOGLE_CLIENT_SECRET
@@ -22,10 +29,24 @@ export default async function verifyUserWithBackend(code: string) {
         );
 
         const { tokens } = await auth.getToken(code);
+
+        // DEBUG
+        const accessToken = tokens.access_token;
+        const idToken = tokens.id_token;
+        //Always save refresh token immediately to a secure database associated with that user.
+        const refreshToken = tokens.refresh_token;
+        const expiryDate = tokens.expiry_date;
+        console.log("Access Token:", accessToken);
+        console.log("Id Token:", idToken);
+        console.log("Refresh Token:", refreshToken);
+        console.log("Expires At:", new Date(expiryDate || ''));
+        // EO DEBUG
+
         const sessionStream = createSessionStream(tokens);
-
-
         const authenticatedClient = await handleUserSessionStream(sessionStream);
+        
+        // Setting Credentials for Later Use
+        auth.setCredentials(tokens);
 
         return new Response("Authentication successful! You can close this window.", {
             status: 200,

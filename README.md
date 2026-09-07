@@ -8,7 +8,7 @@ Analyses images with Gemini. Image upload handler code:
  - Generates jpeg thumbnail into THUMB_DIR
  - Generates Base64 string from image
  - Generate Base64 -placeholder for a blur-up
- 
+ - 
 
 ## 🤔 What is Bun?
 

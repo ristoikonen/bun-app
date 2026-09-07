@@ -25,3 +25,10 @@ export default function hashGoogleSub(googleSub: string): string {
     // Return as a hex string to save into your database
     return hasher.digest("hex");
 }
+
+
+export function calculateUserId(email: string): string {
+  return new Bun.CryptoHasher("sha256")
+    .update(email.toLowerCase().trim())
+    .digest("hex");
+}
