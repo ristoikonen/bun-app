@@ -90,10 +90,9 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     cookieHeader.split("; ").map(c => c.split("="))
                 );
                 const jwtCookie = cookies["auth_token"];
-
                 const token = getCookie(req, "auth_token");
-                if (!token) {
-                    console.log(`token: ${token} (${jwtCookie})`);
+                if (token) {
+                    console.log(`have token: ${token} (${jwtCookie}) (${cookies})`);
                 }
 
 
@@ -151,32 +150,53 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                                 const { credential } = body;
 
                                 // Verify the token cryptographically
-                                const ticket = await client.verifyIdToken({
+                                const loginticket = await client.verifyIdToken({
                                     idToken: credential,
                                     audience: CLIENT_ID,  // Must match your app's client ID
-                                });
 
-                                const payload = ticket.getPayload();
-                                if (!payload) {
+                                });
+                                const tokenpayload = loginticket.getPayload();
+                                if (!tokenpayload) {
                                     return Response.json({ error: "Invalid token payload" });
                                 }
-                                const userid = payload?.sub;
-                                const email = payload?.email;
-                                const name = payload?.name;
-                                const picture = payload?.picture;
+                                const userid = tokenpayload?.sub;
+                                const email = tokenpayload?.email;
+                                const name = tokenpayload?.name;
+                                const picture = tokenpayload?.picture;
+                                //const profile = tokenpayload?.profile;
 
-                                console.log(`Successfully verified user: ${email} (${name})`);
+                                //localStorage.setItem('authToken', JSON.stringify(tokenpayload));
 
-                                const cookieOptions = [
-                                `session_token=${encodeURIComponent(JSON.stringify(payload))}`,
-                                'HttpOnly',                                    // 🔒 Blocks JS XSS attacks
-                                'Path=/',                                      // 🌐 Valid across entire site
-                                'SameSite=Lax',                                // 🛡️ Mitigates CSRF requests
-                                `Max-Age=${24 * 60 * 60}`,                      // ⏳ Lifespan: 24 hours (in seconds)
-                                process.env.NODE_ENV === 'production' ? 'Secure' : '' // 🛰️ HTTPS only in prod
-                                ].filter(Boolean).join('; ');
+                                console.log(`Successfully verified user: ${email} ${name} ${userid} ${picture} `);
+
+                                //return Response.redirect("/newclient", 302);
+                                //return Response.redirect("http://localhost:3000/newclient", 302);
+                                body.redirectUrl = "http://localhost:3000/newclient";
+
                                 
+                                return Response.json({ 
+                                success: true, 
+                                redirectUrl: "/" 
+                                });
+                                
+                                
+
+                                /*
+                                return new Response(JSON.stringify({
+                                    success: true,
+                                    message: 'Authentication successful',
+                                    redirectTo: 'http://localhost:3000/newclient', 
+                                    user: {
+                                        id: userid,
+                                        name: name,
+                                        email: email
+                                    }
+                               }));
+                                */
+
+
                                 // TODO: Create a session, set a secure HTTP-only cookie, or issue your own JWT here
+                                /*
                                 return new Response(JSON.stringify({ message: "Login successful" }), {
                                 status: 200,
                                 headers: {
@@ -184,6 +204,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                                     'Set-Cookie': cookieOptions // 👈 This is how Bun injects the cookie
                                 }
                                 });
+                                */
                                 
                             } catch (error) {
                                 console.error("Token verification failed:", error);
@@ -241,17 +262,17 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             }
                             
                             return new Response(bodyContent + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" + res, {
-                                headers: { "Content-Type": "text/html" },
+                                headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", },
                             });
                         }
                         case '/testform':
-                            return new Response(String(testformPage), { headers: { "Content-Type": "text/html" } });
+                            return new Response(String(testformPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
                         case '/newclient':
-                            return new Response(String(newclientForm), { headers: { "Content-Type": "text/html" } });
+                            return new Response(String(newclientForm), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
                         case '/signin':
-                            return new Response(String(signinPage), { headers: { "Content-Type": "text/html" } });
+                            return new Response(String(signinPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
                         case '/profilepage':
-                            return new Response(String(profilePage), { headers: { "Content-Type": "text/html" } });
+                            return new Response(String(profilePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
                         case '/api/data':
                             return Response.json({ UserProfile
                                 //message: "Data fetched dynamically from Bun API!",
@@ -261,7 +282,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
                             const sport = Bun.env.PORT || "";
                             const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", clientID).replace("__PORT__", sport);
-                            return new Response(renderedHtml, { headers: { "Content-Type": "text/html" } });
+                            return new Response(renderedHtml, { headers: { "Content-Type": "text/html"} });
                         }
                         case '/testupload': {
                             const fileData = Bun.file("rect2.png");

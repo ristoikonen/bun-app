@@ -54,7 +54,8 @@
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ credential: response.credential }),
+            body: JSON.stringify({ credential: response.credential
+            }),
             });
 
             if (!res.ok) {
@@ -63,6 +64,13 @@
 
             const data = await res.json();
             console.log("Success:", data);
+            console.log("data.redirectUrl:", data.redirectUrl);
+
+            if (data.success && data.redirectUrl) {
+                // 2. SUCCESS: Force the browser to change pages
+                window.location.href = data.redirectUrl; 
+            }
+            
         } catch (error) {
             console.error("Fetch failed:", error);
         }
