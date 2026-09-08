@@ -37,7 +37,6 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
     const theArgs = Bun.argv.slice(1);
     console.log("Mains params:", theArgs);
 
-    // 
     const hashrunArg = theArgs.find(arg => arg.startsWith("--hashtest="));
     let isHashrun: boolean = false;
     if (hashrunArg) {
@@ -79,30 +78,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
         username: "johndoe99"
     };
 
-
     const server = Bun.serve({
         port,
         async fetch(req) {
             try {
                 const url = new URL(req.url);
                 const cookieHeader = req.headers.get("cookie") || "";
-                //const cookies = new CookieMap(cookieHeader);
-                /*
-                const cookieHeader = req.headers.get("Cookie") || "";
-                const cookies = Object.fromEntries(
-                    cookieHeader.split("; ").map(c => c.split("="))
-                );
-                const jwtCookie = cookies["auth_token"];
-                const token = getCookie(req, "auth_token");
-                if (token) {
-                    console.log(`have token: ${token} (${jwtCookie}) (${cookies})`);
-                }
-                */
-
-                /*
-                if (req.method === "OPTIONS") {
-                   return new Response(null, { headers: corsHeaders });
-                } */
                 
                 if (url.pathname === "/auth/callback") {
                     const code = url.searchParams.get("code");
@@ -116,25 +97,6 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     if (!code) {
                         return new Response("Missing authorization code from Google.", { status: 400 });
                     }
-                }
-
-                if (url.pathname === "/profile") {
-                    console.error('profile handling');
-                     //if (!jwtCookie) {
-                    //    return new Response("Unauthorized: No session found", { status: 401 });
-                    //}
-                    //const session = await Auth.verifyToken(jwtCookie);
-                    //if (!session) {
-                    //    return new Response("Unauthorized: Invalid or expired token", { status: 401 });
-                    //} 
-                    return new Response(
-                        JSON.stringify({
-                            message: "Welcome to your secure profile!",
-                           // verifiedGoogleSub: session.googleSub,
-                            //userEmail: session.email
-                        }, null, 2),
-                        { headers: { "Content-Type": "application/json" } }
-                    );
                 }
 
                 if (req.method === 'POST') {
@@ -151,100 +113,11 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             try {
 
                                 return verifyIdToken(req, client);
-                            /*    
-                                const body = await req.json();
-                                
-
-                                const { credential } = body;
-
-                                // Verify the token cryptographically
-                                const loginticket = await client.verifyIdToken({
-                                    idToken: credential,
-                                    audience: CLIENT_ID,  // Must match your app's client ID
-
-                                });
-                                const tokenpayload = loginticket.getPayload();
-                                if (!tokenpayload) {
-                                    return Response.json({ error: "Invalid token payload" });
-                                }
-                                const userid = tokenpayload?.sub;
-                                const email = tokenpayload?.email;
-                                const name = tokenpayload?.name;
-                                const picture = tokenpayload?.picture;
-                                //const profile = tokenpayload?.profile;
-
-                                //localStorage.setItem('authToken', JSON.stringify(tokenpayload));
-
-                                console.log(`Successfully verified user: ${email} ${name} ${userid} ${picture} `);
-
-                                const cookies = new CookieMap(req.headers.get("Cookie") || ""); 
-
-                                cookies.set({
-                                    name: "session_token",
-                                    value: encodeURIComponent(JSON.stringify(tokenpayload)),
-                                    httpOnly: true,                                       // 🔒 Blocks JS XSS attacks
-                                    path: "/",                                            // 🌐 Valid across entire site
-                                    //sameSite: "Lax",                                      // 🛡️ Mitigates CSRF requests
-                                    maxAge: 24 * 60 * 60,                                 // ⏳ Lifespan: 24 hours
-                                    secure: process.env.NODE_ENV === "production"         // 🛰️ HTTPS only in prod
-                                });
-
-                                const cookieOptions = [
-                                    `session_token=${encodeURIComponent(JSON.stringify(tokenpayload))}`,
-                                    'HttpOnly',                                    // 🔒 Blocks JS XSS attacks
-                                    'Path=/',                                      // 🌐 Valid across entire site
-                                    'SameSite=Lax',                                // 🛡️ Mitigates CSRF requests
-                                    `Max-Age=${24 * 60 * 60}`,                      // ⏳ Lifespan: 24 hours (in seconds)
-                                    process.env.NODE_ENV === 'production' ? 'Secure' : '' // 🛰️ HTTPS only in prod
-                                ].filter(Boolean).join('; ');
-
-                                //return Response.redirect("/newclient", 302);
-                                                           
-
-                                return Response.json({ 
-                                    success: true, 
-                                    redirectUrl: "/" 
-                                });
-
-
-                                */
-
-                                /*
-                                return new Response(JSON.stringify({
-                                    success: true,
-                                    message: 'Authentication successful',
-                                    redirectTo: 'http://localhost:3000/newclient', 
-                                    user: {
-                                        id: userid,
-                                        name: name,
-                                        email: email
-                                    }
-                               }));
-
-
-
-
-                                // TODO: Create a session, set a secure HTTP-only cookie, or issue your own JWT here
-
-                                return new Response(JSON.stringify({ message: "Login successful" }), {
-                                status: 200,
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Set-Cookie': cookieOptions // 👈 This is how Bun injects the cookie
-                                }
-                                });
-                                */
-                                
+                               
                             } catch (error) {
                                 console.error("Token verification failed:", error);
                                 return Response.json({ success: false, error: "Invalid Google token" }, { status: 401 });
                             }
-                            /*
-                            const body = await req.json();
-                            const { credential } = body;
-                            console.log("Received Google credential:", credential);
-                            return Response.json({ success: true, message: "Authenticated successfully" });
-                            */
                         default:
                             return new Response('Not Found', { status: 404 });
                     }
@@ -283,12 +156,6 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             }
 
                             const bodyContent = countimages.toString() + " images found in the images folder." + imageHTML + images;
-                            //const sessionCookie = cookies.get("session");
-                            //if (sessionCookie != null) {
-                            //    console.log(sessionCookie);
-                            //}
-
-
                             let res = "No analysis";
                             const fileArrayData2 = Bun.file("rect2.png");
                             if (await fileArrayData2.exists()) {
