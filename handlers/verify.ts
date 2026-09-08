@@ -1,9 +1,7 @@
 
-//const apiBaseUrl = process.env.services__apiservice__http__1;
-//console.log(`API Base URL: ${apiBaseUrl ?? 'null apiBaseUrl'}`);
-
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
+import { Glob, CookieMap } from "bun";
 
 /*
 Get
@@ -64,6 +62,51 @@ export default async function verifyUserWithBackend(code: string) {
 
 }
 
+export async function verifyIdToken(req: Request, client: OAuth2Client): Promise<Response> {
+    const googleClientId = Bun.env.GOOGLE_CLIENT_ID
+    try {
+        const body = await req.json();
+        const { credential } = body;
+
+        // Verify the token cryptographically
+        const loginticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: googleClientId,  
+        });
+        const tokenpayload = loginticket.getPayload();
+        if (!tokenpayload) {
+            return Response.json({ error: "Invalid token payload" });
+        }
+        const userid = tokenpayload?.sub;
+        const email = tokenpayload?.email;
+        const name = tokenpayload?.name;
+        const picture = tokenpayload?.picture;
+        //const profile = tokenpayload?.profile;
+        console.log(`Successfully verified user id: ${email} ${name} ${userid} ${picture} `);
+
+        // gen "session_token" from tokenpayload
+        const cookies = new CookieMap(req.headers.get("Cookie") || ""); 
+
+        cookies.set({
+            name: "session_token",
+            value: encodeURIComponent(JSON.stringify(tokenpayload)),
+            httpOnly: true,                                       // 🔒 Blocks JS XSS attacks
+            path: "/",                                            // 🌐 Valid across entire site
+            //sameSite: "Lax",                                     // 🛡️ Mitigates CSRF requests
+            maxAge: 24 * 60 * 60,                                 // ⏳ Lifespan: 24 hours
+            secure: process.env.NODE_ENV === "production"         // 🛰️ HTTPS only in prod
+        });
+
+        return Response.json({ 
+            success: true, 
+            redirectUrl: "/" 
+        });
+
+    } catch (err) {
+        console.error("OAuth exchange failed:", err);
+        return new Response("Internal Server Error during auth exchange.", { status: 500 });
+    }
+}
 
 
 /**

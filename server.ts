@@ -1,14 +1,14 @@
 //import { serve } from "bun";
 import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 import { readdir, mkdir } from "node:fs/promises";
-import { Glob } from "bun";
+import { Glob, CookieMap } from "bun";
 import { Auth } from "./auth";
 import { S3Client,s3 } from "bun";
 import askGemini, { analyseGeminiBase64,askGeminiImageQuestion } from './services/ask_gemini';
 import testHashAndVerifyUserWithBackend from './services/security';
 import getCookie from './services/cookie';
 import handleUpload from './handlers/upload';
-import verifyUserWithBackend from './handlers/verify'
+import verifyUserWithBackend, { verifyIdToken } from './handlers/verify'
 import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
 import testformPage from "./pages/testform.html" with { type: "text" };
@@ -85,6 +85,9 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
         async fetch(req) {
             try {
                 const url = new URL(req.url);
+                const cookieHeader = req.headers.get("cookie") || "";
+                //const cookies = new CookieMap(cookieHeader);
+                /*
                 const cookieHeader = req.headers.get("Cookie") || "";
                 const cookies = Object.fromEntries(
                     cookieHeader.split("; ").map(c => c.split("="))
@@ -94,7 +97,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 if (token) {
                     console.log(`have token: ${token} (${jwtCookie}) (${cookies})`);
                 }
-
+                */
 
                 /*
                 if (req.method === "OPTIONS") {
@@ -117,18 +120,18 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
                 if (url.pathname === "/profile") {
                     console.error('profile handling');
-                     if (!jwtCookie) {
-                        return new Response("Unauthorized: No session found", { status: 401 });
-                    }
-                    const session = await Auth.verifyToken(jwtCookie);
-                    if (!session) {
-                        return new Response("Unauthorized: Invalid or expired token", { status: 401 });
-                    } 
+                     //if (!jwtCookie) {
+                    //    return new Response("Unauthorized: No session found", { status: 401 });
+                    //}
+                    //const session = await Auth.verifyToken(jwtCookie);
+                    //if (!session) {
+                    //    return new Response("Unauthorized: Invalid or expired token", { status: 401 });
+                    //} 
                     return new Response(
                         JSON.stringify({
                             message: "Welcome to your secure profile!",
-                            verifiedGoogleSub: session.googleSub,
-                            userEmail: session.email
+                           // verifiedGoogleSub: session.googleSub,
+                            //userEmail: session.email
                         }, null, 2),
                         { headers: { "Content-Type": "application/json" } }
                     );
@@ -146,7 +149,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             return new Response(String(signinPage), { headers: { "Content-Type": "text/html" } });
                         case '/api/auth/google':
                             try {
+
+                                return verifyIdToken(req, client);
+                            /*    
                                 const body = await req.json();
+                                
+
                                 const { credential } = body;
 
                                 // Verify the token cryptographically
@@ -169,17 +177,37 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
                                 console.log(`Successfully verified user: ${email} ${name} ${userid} ${picture} `);
 
-                                //return Response.redirect("/newclient", 302);
-                                //return Response.redirect("http://localhost:3000/newclient", 302);
-                                body.redirectUrl = "http://localhost:3000/newclient";
+                                const cookies = new CookieMap(req.headers.get("Cookie") || ""); 
 
-                                
-                                return Response.json({ 
-                                success: true, 
-                                redirectUrl: "/" 
+                                cookies.set({
+                                    name: "session_token",
+                                    value: encodeURIComponent(JSON.stringify(tokenpayload)),
+                                    httpOnly: true,                                       // 🔒 Blocks JS XSS attacks
+                                    path: "/",                                            // 🌐 Valid across entire site
+                                    //sameSite: "Lax",                                      // 🛡️ Mitigates CSRF requests
+                                    maxAge: 24 * 60 * 60,                                 // ⏳ Lifespan: 24 hours
+                                    secure: process.env.NODE_ENV === "production"         // 🛰️ HTTPS only in prod
                                 });
-                                
-                                
+
+                                const cookieOptions = [
+                                    `session_token=${encodeURIComponent(JSON.stringify(tokenpayload))}`,
+                                    'HttpOnly',                                    // 🔒 Blocks JS XSS attacks
+                                    'Path=/',                                      // 🌐 Valid across entire site
+                                    'SameSite=Lax',                                // 🛡️ Mitigates CSRF requests
+                                    `Max-Age=${24 * 60 * 60}`,                      // ⏳ Lifespan: 24 hours (in seconds)
+                                    process.env.NODE_ENV === 'production' ? 'Secure' : '' // 🛰️ HTTPS only in prod
+                                ].filter(Boolean).join('; ');
+
+                                //return Response.redirect("/newclient", 302);
+                                                           
+
+                                return Response.json({ 
+                                    success: true, 
+                                    redirectUrl: "/" 
+                                });
+
+
+                                */
 
                                 /*
                                 return new Response(JSON.stringify({
@@ -192,11 +220,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                                         email: email
                                     }
                                }));
-                                */
+
+
 
 
                                 // TODO: Create a session, set a secure HTTP-only cookie, or issue your own JWT here
-                                /*
+
                                 return new Response(JSON.stringify({ message: "Login successful" }), {
                                 status: 200,
                                 headers: {
@@ -224,6 +253,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 if (req.method === 'GET') {
                     switch (url.pathname) {
                         case '/': {
+                            
                             const imagesfilenames: Array<string> = [];
                             const glob = new Glob("*");
                             for (const file of glob.scanSync(IMAGES_DIR)) {
@@ -253,7 +283,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             }
 
                             const bodyContent = countimages.toString() + " images found in the images folder." + imageHTML + images;
-                            
+                            //const sessionCookie = cookies.get("session");
+                            //if (sessionCookie != null) {
+                            //    console.log(sessionCookie);
+                            //}
+
+
                             let res = "No analysis";
                             const fileArrayData2 = Bun.file("rect2.png");
                             if (await fileArrayData2.exists()) {
