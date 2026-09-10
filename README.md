@@ -88,9 +88,46 @@ Populate it with your local secrets, this file is excluded from Git for security
 cp .env.example .env
 ```
 
+## Routes
+
+Routes property allows you to map specific URL paths directly to functions, files, or components using its built-in, high-performance router.
+```js
+const server = Bun.serve({
+  port: 3001,
+  routes: {
+    "/": () => new Response("Welcome to the homepage!"),
+  }
+}});
+```
+### Cookies
+
+BunRequest object exposes a cookies property, a CookieMap for reading and modifying cookies.
+
+```js
+"/": {
+    GET: async (req) => {
+        const sessiontoken = req.cookies.get("session_token");
+```
+
+### Route Parameters
+
+Matched from most to least specific:
+* **Excact**  '/api/users/all'
+* **:id** automatically parses the token and attaches it to the req.params object. Value of req.params.id in server is 42 when client fetches user id 42: '/api/users/42'.
+* **Wildcards(*)** matches everything after that point. Global catch-all is **(/*)** and it is least specific.
+
+
+## Generate cryptographically secure 64-character hex string using Bun
+To use as user id salt secret etc.
+
+```js
+bun -e "console.log(crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, ''))"
+```
+
 ## 🏃 Available Scripts
 
-You can run the following commands in the project directory:
+
+## Commands in the project directory:
 
 ### Development Mode
 Runs the application with Bun's built-in hot reloader. The app will automatically restart when you make changes to the code:

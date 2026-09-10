@@ -1,7 +1,7 @@
 
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
-import { Glob, CookieMap } from "bun";
+import { Glob, CookieMap, BunRequest } from "bun";
 
 /*
 Get
@@ -62,7 +62,7 @@ export default async function verifyUserWithBackend(code: string) {
 
 }
 
-export async function verifyIdToken(req: Request, client: OAuth2Client): Promise<Response> {
+export async function verifyIdToken(req: BunRequest, client: OAuth2Client): Promise<Response> {
     const googleClientId = Bun.env.GOOGLE_CLIENT_ID
     try {
         const body = await req.json();
@@ -84,10 +84,12 @@ export async function verifyIdToken(req: Request, client: OAuth2Client): Promise
         //const profile = tokenpayload?.profile;
         console.log(`Successfully verified user id: ${email} ${name} ${userid} ${picture} `);
 
-        // gen "session_token" from tokenpayload
-        const cookies = new CookieMap(req.headers.get("Cookie") || ""); 
 
-        cookies.set({
+        // No need as BunRequest natively exposes a cookies property as a CookieMap
+        //const cookies = new CookieMap(req.headers.get("Cookie") || ""); 
+
+        // Generate "session_token" cookie from tokenpayload
+        req.cookies.set({
             name: "session_token",
             value: encodeURIComponent(JSON.stringify(tokenpayload)),
             httpOnly: true,                                       // 🔒 Blocks JS XSS attacks

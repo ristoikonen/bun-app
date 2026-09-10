@@ -4,6 +4,7 @@ import { readdir } from "node:fs/promises";
 import { Glob } from "bun";
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
+const MODEL_NAME = "gemini-3.5-flash-lite";
 
 
 export default async function askGemini(ai: GoogleGenAI, promptText: string): Promise<string> {
@@ -11,7 +12,7 @@ export default async function askGemini(ai: GoogleGenAI, promptText: string): Pr
         console.log("Gemini prompt: " + promptText);
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash-lite',
+            model: MODEL_NAME,
             contents: promptText,
         });
 
@@ -29,7 +30,7 @@ export default async function askGemini(ai: GoogleGenAI, promptText: string): Pr
 export async function askGeminiImageQuestion(ai: GoogleGenAI, promptText: string, imageFile: Bun.Image): Promise<string> {
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash-lite',
+            model: MODEL_NAME,
             // "Analyze this image and describe what you see in detail."
             contents: [
                 { text: promptText},
@@ -49,7 +50,7 @@ export async function askGeminiImageQuestion(ai: GoogleGenAI, promptText: string
     }
 }
 
-
+//TODO: Finish and test
 export async function segmentGeminiImage(ai: GoogleGenAI, promptText: string, imageFile: Bun.Image): Promise<string> {
     try {
         /*
@@ -66,11 +67,11 @@ export async function segmentGeminiImage(ai: GoogleGenAI, promptText: string, im
     }
 }
 
-// TODO: fix just png
+// TODO: Change mimeType to be dynamic as now just png
 export async function analyseGeminiBase64(ai: GoogleGenAI, promptText: string, imageFile: Bun.Image): Promise<string> {
     console.log("Gemini prompt: " + promptText);
     const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash-lite',
+        model: MODEL_NAME,
         contents: [
             promptText,
             {
@@ -82,8 +83,10 @@ export async function analyseGeminiBase64(ai: GoogleGenAI, promptText: string, i
         ]
     })
     return response.text || "";
-
 }
+
+
+
 
 
     // JSON

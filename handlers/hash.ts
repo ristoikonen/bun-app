@@ -22,13 +22,19 @@ export default function hashGoogleSub(googleSub: string): string {
 
     hasher.update(googleSub);
 
-    // Return as a hex string to save into your database
+    // Return as a hex string 
     return hasher.digest("hex");
 }
 
 
-export function calculateUserId(email: string): string {
+export function calculateUserIdOld(email: string): string {
   return new Bun.CryptoHasher("sha256")
+    .update(email.toLowerCase().trim())
+    .digest("hex");
+}
+
+export function calculateUserId(email: string): string {
+  return new Bun.CryptoHasher("sha256", Bun.env.USER_ID_SALT)
     .update(email.toLowerCase().trim())
     .digest("hex");
 }

@@ -1,14 +1,12 @@
-//import { serve } from "bun";
-import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
-import { readdir, mkdir } from "node:fs/promises";
+import { GoogleGenAI } from '@google/genai';
+import { mkdir } from "node:fs/promises";
 import { Glob, CookieMap } from "bun";
 import { Auth } from "./auth";
-import { S3Client,s3 } from "bun";
-import askGemini, { analyseGeminiBase64,askGeminiImageQuestion } from './services/ask_gemini';
+import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
 import testHashAndVerifyUserWithBackend from './services/security';
 import getCookie from './services/cookie';
 import handleUpload from './handlers/upload';
-import verifyUserWithBackend, { verifyIdToken } from './handlers/verify'
+import verifyUserWithBackend, { verifyIdToken } from './handlers/verify';
 import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
 import testformPage from "./pages/testform.html" with { type: "text" };
@@ -29,7 +27,6 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
 (async function main() {
-    // Ensure required directories exist on startup
     await mkdir(IMAGES_DIR, { recursive: true });
     await mkdir(UPLOAD_DIR, { recursive: true });
     await mkdir(THUMB_DIR, { recursive: true });
@@ -38,10 +35,8 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
     console.log("Mains params:", theArgs);
 
     const hashrunArg = theArgs.find(arg => arg.startsWith("--hashtest="));
-    let isHashrun: boolean = false;
     if (hashrunArg) {
         const runHashTest = hashrunArg.split("=")[1];  
-
         if (runHashTest === "true") {
             testHashAndVerifyUserWithBackend('abc');
             process.exitCode = 0;
@@ -57,13 +52,6 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
     const ai = new GoogleGenAI();
 
-    const corsHeaders = {
-        "Access-Control-Allow-Origin": "*", // Change to specific origin in production, e.g., "http://127.0.0.1:5500"
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    };
-
-
     interface IUserProfile {
         firstName: string;
         lastName: string;
@@ -78,14 +66,15 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
         username: "johndoe99"
     };
 
+    let siteUserProfile: unknown = null;
+
+    // Incoming req object is a BunRequest
     const server = Bun.serve({
         port,
-        async fetch(req) {
-            try {
-                const url = new URL(req.url);
-                const cookieHeader = req.headers.get("cookie") || "";
-                
-                if (url.pathname === "/auth/callback") {
+        routes: {
+            "/auth/callback": {
+                GET: (req) => {
+                    const url = new URL(req.url);
                     const code = url.searchParams.get("code");
                     const error = url.searchParams.get("error");
                     
@@ -97,123 +86,179 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     if (!code) {
                         return new Response("Missing authorization code from Google.", { status: 400 });
                     }
+                    return new Response("Authorization successful", { status: 200 });
                 }
+            },
+            "/uploadnew": {
+                POST: async (req) => await handleUpload(req)
+            },
+            "/submit_form": {
+                POST: () => new Response("submit_form", { headers: { "Content-Type": "text/html" } })
+            },
+            "/submit_newclient": {
+                POST: () => new Response("submit_newclient", { headers: { "Content-Type": "text/html" } })
+            },
+            "/signin": {
+                GET: () => {
+                    const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
+                    const renderedHtml = String(signinPage).replace("__GOOGLE_CLIENT_ID__", clientID);
+                    return new Response(renderedHtml, { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } });
 
-                if (req.method === 'POST') {
-                    switch (url.pathname) {
-                        case '/uploadnew':
-                            return await handleUpload(req);
-                        case '/submit_form':
-                            return new Response("submit_form", { headers: { "Content-Type": "text/html" } });
-                        case '/submit_newclient':
-                            return new Response("submit_newclient", { headers: { "Content-Type": "text/html" } });
-                        case '/signin':
-                            return new Response(String(signinPage), { headers: { "Content-Type": "text/html" } });
-                        case '/api/auth/google':
-                            try {
-
-                                return verifyIdToken(req, client);
-                               
-                            } catch (error) {
-                                console.error("Token verification failed:", error);
-                                return Response.json({ success: false, error: "Invalid Google token" }, { status: 401 });
-                            }
-                        default:
-                            return new Response('Not Found', { status: 404 });
-                    }
-                } 
-                
-                if (req.method === 'GET') {
-                    switch (url.pathname) {
-                        case '/': {
-                            
-                            const imagesfilenames: Array<string> = [];
-                            const glob = new Glob("*");
-                            for (const file of glob.scanSync(IMAGES_DIR)) {
-                                imagesfilenames.push(IMAGES_DIR + "/" + file);
-                            }
-                            
-                            const bunimages: Array<any> = [];
-                            const fileArrayData = Bun.file(RECT1_PNG);
-                            const image1 = new Bun.Image(await fileArrayData.arrayBuffer());
-                            const base64String = await image1.toBase64();
-
-                            let images = "";
-                            const imageHTML = `<img src="data:image/png;base64,${base64String}" alt="Inlined Image" />`;
-
-                            for (const file of imagesfilenames) {
-                                const fileData = Bun.file(file);
-                                const ima = new Bun.Image(await fileData.arrayBuffer());
-                                bunimages.push(ima);
-                            }
-
-                            const countimages = bunimages.length;
-                            if (bunimages.length > 0) {
-                                for (const image of bunimages) {
-                                    const lqip = await image.placeholder();
-                                    images += `<img src="${lqip}" />`;
-                                }
-                            }
-
-                            const bodyContent = countimages.toString() + " images found in the images folder." + imageHTML + images;
-                            let res = "No analysis";
-                            const fileArrayData2 = Bun.file("rect2.png");
-                            if (await fileArrayData2.exists()) {
-                                const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
-                                res = await askGeminiImageQuestion(ai, "Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains", image2) ?? "No analysis";
-                            }
-                            
-                            return new Response(bodyContent + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" + res, {
-                                headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", },
-                            });
-                        }
-                        case '/testform':
-                            return new Response(String(testformPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
-                        case '/newclient':
-                            return new Response(String(newclientForm), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
-                        case '/signin':
-                            return new Response(String(signinPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
-                        case '/profilepage':
-                            return new Response(String(profilePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups", } });
-                        case '/api/data':
-                            return Response.json({ UserProfile
-                                //message: "Data fetched dynamically from Bun API!",
-                                //items: ["Item 1", "Item 2", "Item 3"]
-                            });
-                        case '/googletoken': {
-                            const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
-                            const sport = Bun.env.PORT || "";
-                            const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", clientID).replace("__PORT__", sport);
-                            return new Response(renderedHtml, { headers: { "Content-Type": "text/html"} });
-                        }
-                        case '/testupload': {
-                            const fileData = Bun.file("rect2.png");
-                            const blob = new Blob([await fileData.arrayBuffer()], { type: fileData.type });
-                            const formData = new FormData();
-                            formData.append("image", blob, "test.jpg");
-
-                            const reqMock = new Request("http://localhost/upload", {
-                                method: "POST",
-                                body: formData,
-                            });
-
-                            const response = await handleUpload(reqMock);
-                            return new Response(response.body, {
-                                headers: { "Content-Type": response.headers.get("content-type") ?? "text/html" },
-                            });
-                        }
-                        default:
-                            return new Response('Not Found', { status: 404 });
+                //POST: () => new Response(String(signinPage), { headers: { "Content-Type": "text/html" } })
+                }
+            },
+            "/api/auth/google": {
+                POST: async (req) => {
+                    try {
+                        return await verifyIdToken(req, client);
+                    } catch (error) {
+                        console.error("Token verification failed:", error);
+                        return Response.json({ success: false, error: "Invalid Google token" }, { status: 401 });
                     }
                 }
+            },
+            "/": {
+                GET: async (req) => {
+                    const sessiontoken = req.cookies.get("session_token");
+                    let userdata = '';
+                    if (sessiontoken) {
+                        const fullyDecoded = decodeURIComponent(decodeURIComponent(sessiontoken));
+                        const jsonString = fullyDecoded.substring(0, fullyDecoded.lastIndexOf("}") + 1);
+                        //console.log(jsonString);
+                        const userPayload = JSON.parse(jsonString);
+                        const givenName = userPayload.given_name;     
+                        const familyName = userPayload.family_name;   
+                        const email = userPayload.email;              
+                        const picture = userPayload.picture;          
+                        const sub = userPayload.sub;                  
 
-                return new Response('Not Found', { status: 404 });
-            } catch (err) {
-                console.error("Server error:", err);
-                return new Response(`Internal Server Error: ${err}`, { status: 500 });
+                        userdata = (givenName || '') + ' ' + (email || '') ;
+
+                        const UserSessionProfile: IUserProfile = {
+                            firstName: givenName,
+                            lastName: familyName,
+                            email: email,
+                            username: ""
+                        };
+                        //TODO: to be used in Profile page
+                        siteUserProfile = UserSessionProfile;
+                        if (siteUserProfile !== null)
+                        {
+                            console.log("siteUserProfile !== null");
+                        }
+                    }
+                    
+                    
+                    const imagesfilenames: Array<string> = [];
+                    const glob = new Glob("*");
+                    for (const file of glob.scanSync(IMAGES_DIR)) {
+                        imagesfilenames.push(IMAGES_DIR + "/" + file);
+                    }
+                    
+                    const bunimages: Array<any> = [];
+                    const fileArrayData = Bun.file(RECT1_PNG);
+                    const image1 = new Bun.Image(await fileArrayData.arrayBuffer());
+                    const base64String = await image1.toBase64();
+
+                    let images = "";
+                    const imageHTML = `<img src="data:image/png;base64,${base64String}" alt="Inlined Image" />`;
+
+                    for (const file of imagesfilenames) {
+                        const fileData = Bun.file(file);
+                        const ima = new Bun.Image(await fileData.arrayBuffer());
+                        bunimages.push(ima);
+                    }
+
+                    const countimages = bunimages.length;
+                    if (bunimages.length > 0) {
+                        for (const image of bunimages) {
+                            const lqip = await image.placeholder();
+                            images += `<img src="${lqip}" />`;
+                        }
+                    }
+
+                    const bodyContent = countimages.toString() + " images found in the images folder." + imageHTML + images;
+                    let res = "No analysis";
+                    const fileArrayData2 = Bun.file("rect2.png");
+                    if (await fileArrayData2.exists()) {
+                        const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
+                        res = await askGeminiImageQuestion(ai, "Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains", image2) ?? "No analysis";
+                    }
+                    
+                    return new Response(userdata + "<br/>" + bodyContent + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" + res, {
+                        headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" },
+                    });
+                }
+            },
+            "/testform": {
+                GET: () => new Response(String(testformPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/newclient": {
+                GET: () => new Response(String(newclientForm), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/profilepage": {
+                GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/api/data": {
+                // serves user data to profile -page!
+                // TODO: Bake session_token data into UserProfile!
+                GET: () => Response.json({ UserProfile })
+            },
+
+
+           "/api/users/:id": {
+
+                GET: (req) => {
+                  //return Response.json({ message: `Fetching user ${req.params.id}` });
+                          
+                    // Mock Database
+                    const users = [
+                        { id: '1', name: "Alice" },
+                        { id: '2', name: "Bob" }
+                    ];
+
+                    const userIdStr = req.params.id; 
+                    // const userId = Number(userIdStr); 
+                    const user = users.find(u => u.id === userIdStr);
+                    if (!user) {
+                        return Response.json({ error: "User not found" }, { status: 404 });
+                    }
+
+                    return Response.json({ success: true, data: user }); 
+                    },
+            },
+            "/googletoken": {
+                GET: () => {
+                    const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
+                    const sport = Bun.env.PORT || "";
+                    const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", clientID).replace("__PORT__", sport);
+                    return new Response(renderedHtml, { headers: { "Content-Type": "text/html" } });
+                }
+            },
+            "/testupload": {
+                GET: async () => {
+                    const fileData = Bun.file("rect2.png");
+                    const blob = new Blob([await fileData.arrayBuffer()], { type: fileData.type });
+                    const formData = new FormData();
+                    formData.append("image", blob, "test.jpg");
+
+                    const reqMock = new Request("http://localhost/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    const response = await handleUpload(reqMock);
+                    return new Response(response.body, {
+                        headers: { "Content-Type": response.headers.get("content-type") ?? "text/html" },
+                    });
+                }
             }
         },
+        fetch() {
+            return new Response('Not Found', { status: 404 });
+        },
     });
+
     console.log(`Bun server listening on http://${server.hostname}:${server.port}`);
 })().catch((err) => {
     console.error(err);
