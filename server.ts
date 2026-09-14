@@ -60,6 +60,23 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
         username: string;
     }
 
+interface IGoogleUserProfile {
+    iss: string;
+    azp: string;
+    aud: string;
+    sub: string;
+    email: string;
+    email_verified: boolean;
+    nbf: number;
+    name: string;
+    picture: string;
+    given_name: string;
+    family_name: string;
+    iat: number;
+    exp: number;
+    jti: string;
+}
+
     const UserProfile: IUserProfile = {
         firstName: "MarkX",
         lastName: "DoeX",
@@ -210,24 +227,37 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 {
 
                     const encodedToken = req.cookies.get("session_token");
-                    const decodedJson = decodeURIComponent(encodedToken || '');
-                    const tokenPayload = JSON.parse(decodedJson);
+                    if (!encodedToken) {
+                        return Response.json({ error: "Unauthorized" }, { status: 401 });
+                    }
 
+                    try {
+                        const decodedJson = decodeURIComponent(encodedToken);
+                        const tokenPayload = JSON.parse(decodedJson);
 
-                    
-                    console.log('/api/data"');
-                    console.log(tokenPayload);
-                    console.log(tokenPayload.email);
+                        const googleUserProfile: IGoogleUserProfile = {
+                            iss: tokenPayload.iss,
+                            azp: tokenPayload.azp,
+                            aud: tokenPayload.aud,
+                            sub: tokenPayload.sub,
+                            email: tokenPayload.email,
+                            email_verified: tokenPayload.email_verified,
+                            nbf: tokenPayload.nbf,
+                            name: tokenPayload.name,
+                            picture: tokenPayload.picture,
+                            given_name: tokenPayload.given_name,
+                            family_name: tokenPayload.family_name,
+                            iat: tokenPayload.iat,
+                            exp: tokenPayload.exp,
+                            jti: tokenPayload.jti,
+                        };
 
-                    //const userProfile: IUserProfile = {
-                        //firstName: nameParts[0] || "",
-                        //lastName: nameParts.slice(1).join(" ") || "",
-                    //    email: tokenPayload.email || "",
-                    //    username: tokenPayload.username || tokenPayload.email?.split("@")[0] || "",
-                    //};
+                        return Response.json(googleUserProfile); 
 
-                    //console.log("/api/data");
-                    return Response.json({ siteUserProfile }); 
+                    } catch (error) {
+                        console.error("Failed to parse session token:", error);
+                        return Response.json({ error: "Invalid token" }, { status: 400 });
+                    }
 
                 }
             },

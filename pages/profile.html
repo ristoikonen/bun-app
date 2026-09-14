@@ -55,6 +55,10 @@
             background-color: #f1f5f9;
             border-right: 1px solid var(--border-color);
             padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
         }
 
         .sidebar-title {
@@ -62,12 +66,13 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 24px;
             color: var(--text-muted);
+            width: 100%;
         }
 
         .sidebar-menu {
             list-style: none;
+            width: 100%;
         }
 
         .sidebar-item a {
@@ -91,6 +96,14 @@
         .sidebar-item a:hover:not(.sidebar-item.active a) {
             background-color: #e2e8f0;
             color: var(--text-main);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
         }
 
         /* Main Content Area */
@@ -159,60 +172,6 @@
             border-bottom: 1px dashed var(--border-color);
         }
 
-        .info-value.bio-text {
-            border-bottom: none;
-            background-color: #f8fafc;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            line-height: 1.6;
-            color: #334155;
-        }
-
-        /* Action Footer */
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            padding-top: 25px;
-            margin-top: 40px;
-        }
-
-        .edit-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-
-        .edit-link:hover {
-            text-decoration: underline;
-            color: #1d4ed8;
-        }
-
-        .btn {
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-
-        .btn-secondary {
-            background-color: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: #f1f5f9;
-            color: var(--text-main);
-        }
-
         /* Responsive Configuration */
         @media (max-width: 768px) {
             body {
@@ -247,10 +206,8 @@
             <h3 class="sidebar-title">Account Center</h3>
             <ul class="sidebar-menu">
                 <li class="sidebar-item active"><a href="#profile">Personal Details</a></li>
-<!--                 <li class="sidebar-item"><a href="#account">Preferences</a></li>
-                <li class="sidebar-item"><a href="#security">Security Keys</a></li>
-                <li class="sidebar-item"><a href="#notifications">Alert Settings</a></li> -->
             </ul>
+            <img id="profile-avatar" class="profile-avatar" src="" alt="User Profile Picture" />
         </aside>
 
         <!-- Main Information Content Card -->
@@ -265,82 +222,83 @@
                 <div class="info-grid">
                     <div class="info-group">
                         <span class="info-label">First Name</span>
-                        <div class="info-value" data-key="firstName">John</div>
+                        <div class="info-value" data-key="firstName">--</div>
                     </div>
 
                     <div class="info-group">
                         <span class="info-label">Last Name</span>
-                        <div class="info-value" data-key="lastName">Doe</div>
+                        <div class="info-value" data-key="lastName">--</div>
                     </div>
 
                     <div class="info-group">
                         <span class="info-label">Email Address</span>
-                        <div class="info-value" data-key="email">john.doe@example.com</div>
+                        <div class="info-value" data-key="email">--</div>
                     </div>
 
                     <div class="info-group">
-                        <span class="info-label">Username</span>
-                        <div class="info-value" data-key="username">johndoe99</div>
+                        <span class="info-label">Name</span>
+                        <div class="info-value" data-key="userName">--</div>
                     </div>
-
-<!--                     <div class="info-group full-width">
-                        <span class="info-label">Biography</span>
-                        <div class="info-value bio-text">
-                            
-                        </div>
-                    </div> -->
-
                 </div>
-
-
-                <!-- Footer Component Controls 
-                <div class="form-actions">
-                    <a href="#request-change" class="edit-link">Request data change?</a>
-                    <button type="button" class="btn btn-secondary">Return to Dashboard</button>
-                </div>
-                -->
             </section>
         </main>
     </div>
     
 <script>
-
     async function loadData() {
+        try {
+            const res = await fetch('/api/data');
 
-        const res = await fetch('/api/data');
-        const data = await res.json();
-        console.log('Pofile');
-        console.log(data);
-        console.log(data?.UserProfile?.email)
-        //setVisibleValue('firstName', data?.UserProfile?.firstName || '');
-        //setVisibleValue('lastName', data?.UserProfile?.lastName || '');
-        setVisibleValue('email', data?.UserProfile?.email || '');
-        //setVisibleValue('username', data?.UserProfile?.username || '');
-        
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.warn('API Error:', errorData.error || 'Unknown error');
+                
+                //TODO: WHERE TO REDIR / ELSE? 
+                // Redirect user to sign-in page if unauthorized
+                if (res.status === 401 || res.status === 400) {
+                    window.location.href = '/signin';
+                }
+                return;
+            }
+
+            const data = await res.json();
+
+            const profile = data;
+            if (!profile) {
+                console.warn("No googleUserProfile found in response");
+                //TODO: WHERE TO REDIR? 
+                return;
+            }
+
+            setVisibleValue('firstName', profile.given_name || '');
+            setVisibleValue('lastName', profile.family_name || '');
+            setVisibleValue('email', profile.email || '');
+            setVisibleValue('userName', profile.name || '');
+
+            // Set profile image source
+            if (profile.picture) {
+                const avatarImg = document.getElementById('profile-avatar');
+                if (avatarImg) {
+                    avatarImg.src = profile.picture;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load profile data:', error);
+        }
     }
 
     loadData();
 
-  // Wait for the DOM window to fully load
-  //window.addEventListener('DOMContentLoaded', () => {
-      
-      //const profileData = dataSource.dataset; 
-      //const firstNameDiv = document.querySelector('[data-key="firstName"]');
-      // if (firstNameDiv) { firstNameDiv.textContent = "John";  }
-  //});
-
-
-  // A reusable function to update any div by its data-key
-  function setVisibleValue(key, value) {
-      const targetElement = document.querySelector(`[data-key="${key}"]`);
-      
-      if (targetElement && value) {
-          targetElement.textContent = value;
-      } else {
-          console.warn(`Element with data-key="${key}" was not found or value is null`);
-      }
-  }
-
+    // A reusable function to update any div by its data-key
+    function setVisibleValue(key, value) {
+        const targetElement = document.querySelector(`[data-key="${key}"]`);
+        
+        if (targetElement) {
+            targetElement.textContent = value || '--';
+        } else {
+            console.warn(`Element with data-key="${key}" was not found`);
+        }
+    }
 </script>
 </body>
 </html>
