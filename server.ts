@@ -4,7 +4,7 @@ import { Glob, CookieMap } from "bun";
 import { Auth } from "./auth";
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
 import testHashAndVerifyUserWithBackend from './services/security';
-import getCookie from './services/cookie';
+import {getGoogleUserProfileFromCookie} from './services/cookie';
 import handleUpload from './handlers/upload';
 import verifyUserWithBackend, { verifyIdToken } from './handlers/verify';
 import registrationForm from "./pages/form.html" with { type: "text" };
@@ -137,37 +137,11 @@ interface IGoogleUserProfile {
             },
             "/": {
                 GET: async (req) => {
-                    const sessiontoken = req.cookies.get("session_token");
-                    let userdata = '';
-                    if (sessiontoken) {
-                        const fullyDecoded = decodeURIComponent(decodeURIComponent(sessiontoken));
-                        const jsonString = fullyDecoded.substring(0, fullyDecoded.lastIndexOf("}") + 1);
-                        //-------------------------------
-                        
-                        //console.log(jsonString);
-                        const userPayload = JSON.parse(jsonString);
-                        const givenName = userPayload.given_name;     
-                        const familyName = userPayload.family_name;   
-                        const email = userPayload.email;              
-                        const picture = userPayload.picture;          
-                        const sub = userPayload.sub;                  
-
-                        userdata = (givenName || '') + ' ' + (email || '') ;
-
-                        const UserSessionProfile: IUserProfile = {
-                            firstName: givenName,
-                            lastName: familyName,
-                            email: email,
-                            username: ""
-                        };
-                        //TODO: to be used in Profile page
-                        siteUserProfile = UserSessionProfile;
-                        if (siteUserProfile !== null)
-                        {
-                            console.log("siteUserProfile !== null");
-                        }
+                    const googleuserprofile = getGoogleUserProfileFromCookie(req, "session_token")
+                    let userprofile ='';
+                    if (googleuserprofile) {
+                        userprofile = googleuserprofile?.name || '';
                     }
-                    
                     
                     const imagesfilenames: Array<string> = [];
                     const glob = new Glob("*");
@@ -205,7 +179,7 @@ interface IGoogleUserProfile {
                         res = await askGeminiImageQuestion(ai, "Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains", image2) ?? "No analysis";
                     }
                     
-                    return new Response(userdata + "<br/>" + bodyContent + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" + res, {
+                    return new Response(userprofile + "<br/>" + bodyContent + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" + res, {
                         headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" },
                     });
                 }
@@ -225,34 +199,12 @@ interface IGoogleUserProfile {
                 
                 GET: (req) => 
                 {
-
-                    const encodedToken = req.cookies.get("session_token");
-                    if (!encodedToken) {
-                        return Response.json({ error: "Unauthorized" }, { status: 401 });
-                    }
-
                     try {
-                        const decodedJson = decodeURIComponent(encodedToken);
-                        const tokenPayload = JSON.parse(decodedJson);
-
-                        const googleUserProfile: IGoogleUserProfile = {
-                            iss: tokenPayload.iss,
-                            azp: tokenPayload.azp,
-                            aud: tokenPayload.aud,
-                            sub: tokenPayload.sub,
-                            email: tokenPayload.email,
-                            email_verified: tokenPayload.email_verified,
-                            nbf: tokenPayload.nbf,
-                            name: tokenPayload.name,
-                            picture: tokenPayload.picture,
-                            given_name: tokenPayload.given_name,
-                            family_name: tokenPayload.family_name,
-                            iat: tokenPayload.iat,
-                            exp: tokenPayload.exp,
-                            jti: tokenPayload.jti,
-                        };
-
-                        return Response.json(googleUserProfile); 
+                        const googleuserprofile = getGoogleUserProfileFromCookie(req, "session_token")
+                        if (!googleuserprofile) {
+                            return Response.json({ error: "Unauthorized" }, { status: 401 });
+                        }
+                        return Response.json(googleuserprofile); 
 
                     } catch (error) {
                         console.error("Failed to parse session token:", error);
