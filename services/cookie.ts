@@ -18,3 +18,21 @@ export default function getCookie(request: Request, name: string): string {
     return "";
   }
 }
+
+export function generateSessionIdHeader(isProductionEnv: boolean): string {
+  const sessionId = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 86400 * 1000); // 1 day
+  const secureprod = isProductionEnv; 
+  
+  // Using Bun's built-in cookie response helpers or headers
+  return "session_id=${sessionId}; HttpOnly; Secure=${secureprod}; Path=/; SameSite=Lax; Expires=${expiresAt.toUTCString()}";
+    
+}
+/*
+return new Response("Logged in successfully", {
+        headers: {
+          "Set-Cookie": generateSessionIdHeader(false),
+        },
+      });
+
+      */

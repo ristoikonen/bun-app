@@ -305,19 +305,21 @@
     
 <script>
 
-  async function loadData() {
-            const res = await fetch('/api/data');
-            const data = await res.json();
-            console.log(data);
-            console.log(data?.UserProfile?.firstName)
-            setVisibleValue('firstName', data?.UserProfile?.firstName || '');
-            setVisibleValue('lastName', data?.UserProfile?.lastName || '');
-            setVisibleValue('email', data?.UserProfile?.email || '');
-            setVisibleValue('username', data?.UserProfile?.username || '');
-            
-        }
+    async function loadData() {
 
-  loadData();
+        const res = await fetch('/api/data');
+        const data = await res.json();
+        console.log('Pofile');
+        console.log(data);
+        console.log(data?.UserProfile?.email)
+        //setVisibleValue('firstName', data?.UserProfile?.firstName || '');
+        //setVisibleValue('lastName', data?.UserProfile?.lastName || '');
+        setVisibleValue('email', data?.UserProfile?.email || '');
+        //setVisibleValue('username', data?.UserProfile?.username || '');
+        
+    }
+
+    loadData();
 
   // Wait for the DOM window to fully load
   //window.addEventListener('DOMContentLoaded', () => {

@@ -22,6 +22,7 @@ const IMAGES_DIR = "./images";
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
 const RECT1_PNG = "./images/rect1.png";
+const RECT2_PNG = "./images/rect2.png";
 
 const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
@@ -60,10 +61,10 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
     }
 
     const UserProfile: IUserProfile = {
-        firstName: "Mark",
-        lastName: "Doe",
-        email: "john.doe@mail.com",
-        username: "johndoe99"
+        firstName: "MarkX",
+        lastName: "DoeX",
+        email: "john.doeX@mail.com",
+        username: "johndoe99X"
     };
 
     let siteUserProfile: unknown = null;
@@ -124,6 +125,8 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     if (sessiontoken) {
                         const fullyDecoded = decodeURIComponent(decodeURIComponent(sessiontoken));
                         const jsonString = fullyDecoded.substring(0, fullyDecoded.lastIndexOf("}") + 1);
+                        //-------------------------------
+                        
                         //console.log(jsonString);
                         const userPayload = JSON.parse(jsonString);
                         const givenName = userPayload.given_name;     
@@ -179,7 +182,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
                     const bodyContent = countimages.toString() + " images found in the images folder." + imageHTML + images;
                     let res = "No analysis";
-                    const fileArrayData2 = Bun.file("rect2.png");
+                    const fileArrayData2 = Bun.file(RECT2_PNG);
                     if (await fileArrayData2.exists()) {
                         const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
                         res = await askGeminiImageQuestion(ai, "Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains", image2) ?? "No analysis";
@@ -202,7 +205,31 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             "/api/data": {
                 // serves user data to profile -page!
                 // TODO: Bake session_token data into UserProfile!
-                GET: () => Response.json({ UserProfile })
+                
+                GET: (req) => 
+                {
+
+                    const encodedToken = req.cookies.get("session_token");
+                    const decodedJson = decodeURIComponent(encodedToken || '');
+                    const tokenPayload = JSON.parse(decodedJson);
+
+
+                    
+                    console.log('/api/data"');
+                    console.log(tokenPayload);
+                    console.log(tokenPayload.email);
+
+                    //const userProfile: IUserProfile = {
+                        //firstName: nameParts[0] || "",
+                        //lastName: nameParts.slice(1).join(" ") || "",
+                    //    email: tokenPayload.email || "",
+                    //    username: tokenPayload.username || tokenPayload.email?.split("@")[0] || "",
+                    //};
+
+                    //console.log("/api/data");
+                    return Response.json({ siteUserProfile }); 
+
+                }
             },
 
 
@@ -237,7 +264,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             },
             "/testupload": {
                 GET: async () => {
-                    const fileData = Bun.file("rect2.png");
+                    const fileData = Bun.file(RECT2_PNG);
                     const blob = new Blob([await fileData.arrayBuffer()], { type: fileData.type });
                     const formData = new FormData();
                     formData.append("image", blob, "test.jpg");
