@@ -1,5 +1,7 @@
 ﻿
 // bun test handlers/upload.test.ts
+// Bun provides this module at test runtime; TypeScript may not have Bun's type declarations configured.
+// @ts-expect-error Bun test types are supplied by the Bun runtime.
 import { describe, it, expect, mock, beforeEach } from "bun:test";
 import handleUpload from "./upload";
 
@@ -12,7 +14,7 @@ mock.module("bun", () => {
             write: async () => { }, // Mock file write
         }),
         Image: class {
-            constructor(buffer: Buffer) { }
+            constructor(buffer: Uint8Array) { }
             async metadata() {
                 return { width: 800, height: 600, format: "jpeg" };
             }

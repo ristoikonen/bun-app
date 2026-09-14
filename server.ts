@@ -60,31 +60,8 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
         username: string;
     }
 
-interface IGoogleUserProfile {
-    iss: string;
-    azp: string;
-    aud: string;
-    sub: string;
-    email: string;
-    email_verified: boolean;
-    nbf: number;
-    name: string;
-    picture: string;
-    given_name: string;
-    family_name: string;
-    iat: number;
-    exp: number;
-    jti: string;
-}
 
-    const UserProfile: IUserProfile = {
-        firstName: "MarkX",
-        lastName: "DoeX",
-        email: "john.doeX@mail.com",
-        username: "johndoe99X"
-    };
 
-    let siteUserProfile: unknown = null;
 
     // Incoming req object is a BunRequest
     const server = Bun.serve({

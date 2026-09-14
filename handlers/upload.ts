@@ -1,71 +1,84 @@
-﻿//import { serve } from "bun";
-//import { GoogleGenAI } from '@google/genai';
-import { ai } from '../geminiClient';
-import { readdir } from "node:fs/promises";
-import { Glob } from "bun";
-import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from "../services/ask_gemini";
+﻿import { join, normalize } from "node:path";
+
+const MAX_FILE_SIZE = 500 * 1024; // 500 KB limit
+const MAX_IMAGE_WIDTH = 600; 
+const MAX_IMAGE_HEIGHT = 600; 
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
-const THUMB_SIZE_PX = 150;
+const THUMB_SIZE_PX = 200;
 const THUMB_QUALITY = 80;
 
-
-export default async function handleUpload(req: Request): Promise<Response>
-{
+export default async function handleUpload(req: Request): Promise<Response> {
     try {
         const formData = await req.formData();
-        const file = formData.get("image") as File | null;
+        const file = formData.get("image");
 
-        // Validate image file
-        if (!file) {
-            return new Response("Invalid image", { status: 400 });
+        // 1. Ensure it's a valid File object instance
+        if (!file || typeof file === "string") {
+            return new Response("Invalid submission", { status: 400 });
         }
 
-        const buffer = Buffer.from(await file!.arrayBuffer());
+        // 2. Strict Size Restriction Check (< 500KB) BEFORE reading into memory
+        if (file.size > MAX_FILE_SIZE) {
+            return new Response("File too large. Maximum size allowed is 500KB.", { status: 400 });
+        }
+
+        // 3. Strict MIME type verification
+        if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+            return new Response("Unsupported file type. Only JPEG, PNG, GIF, and WEBP are allowed.", { status: 400 });
+        }
+
+        // Read into buffer safely now that size is strictly bounded
+        const buffer = Buffer.from(await file.arrayBuffer());
+        
+        // Double check buffer size matches file.size attribute
+        if (buffer.length > MAX_FILE_SIZE) {
+            return new Response("Payload limit exceeded", { status: 400 });
+        }
+
         const image = new Bun.Image(buffer);
         const meta = await image.metadata();
 
-        // Validate image and metadata
-        if (!meta.width || !meta.height || !image) {
-            return new Response("Invalid image", { status: 400 });
+        // 4. Validate metadata integrity (Blocks corrupted images or crafted exploits)
+        if (!meta.width || !meta.height || meta.width > MAX_IMAGE_WIDTH || meta.height > MAX_IMAGE_HEIGHT) {
+            return new Response("Invalid image dimensions or malformed image data", { status: 400 });
         }
 
         const fileext =
             meta.format === "jpeg" ? "jpg" :
-                meta.format === "png" ? "png" :
-                    meta.format === "gif" ? "gif" :
-                        meta.format === "bmp" ? "bmp" :
-                            null;
+            meta.format === "png" ? "png" :
+            meta.format === "gif" ? "gif" :
+            meta.format === "webp" ? "webp" : null;
 
-        // Generate filename from date
-        const filename = `${Date.now()}.${fileext || "image"}`;
+        if (!fileext) {
+            return new Response("Unrecognized image format", { status: 400 });
+        }
 
-        // Save original to upload dir
-        await Bun.file(`${UPLOAD_DIR}/${filename}`).write(buffer);
+        // 5. Generate secure, unpredictable filename (prevents directory traversal or collisions)
+        const safeId = crypto.randomUUID();
+        const filename = `${Date.now()}-${safeId}.${fileext}`;
 
-        // Generate thumbnail maintaining aspect ratio
+        // Ensure target path stays strictly inside UPLOAD_DIR (Path Traversal defense)
+        const safeUploadPath = normalize(join(UPLOAD_DIR, filename));
+        const safeThumbPath = normalize(join(THUMB_DIR, filename));
+
+        if (!safeUploadPath.startsWith(normalize(UPLOAD_DIR))) {
+            return new Response("Forbidden path sequence detected", { status: 403 });
+        }
+
+        // Save original file
+        await Bun.file(safeUploadPath).write(buffer);
+
+        // Generate thumbnail safely
         await image
             .resize(THUMB_SIZE_PX)
             .jpeg({ quality: THUMB_QUALITY })
-            .write(`${THUMB_DIR}/${filename}`);
+            .write(safeThumbPath);
 
-   /*
-        //TODO, maybe: AI analysis => Put rect into squares directory, round image objects into 'circles' dir.
-        const yn_answer = await analGeminiBse64("Is this image a rectagle? Answer with just one word: Yes/No.", image);
-        console.log("Gemini answer:" + yn_answer);
-        if (yn_answer.trim().toLowerCase() === "yes") {
-            await image
-                .resize(400)
-                .jpeg({ quality: 80 })
-                .write(`${THUMB_DIR}/squares/${filename}`);
-        }
-    */   
-
-        // Generate placeholder for blur-up
         const placeholder = await image.placeholder();
         const base64 = await image.toBase64();
 
-        //TODO: add dynamic data string!
         const thumbimageHTML = `<img src="data:image/png;base64,${base64}" alt="Inlined Image" />`;
         const placeholderHTMLloading = `<img src="${placeholder}" alt="Placeholder Image" />`;
 
@@ -73,8 +86,7 @@ export default async function handleUpload(req: Request): Promise<Response>
             headers: { "Content-Type": "text/html" },
         });
     }
-    catch (error)
-    {
+    catch (error) {
         console.error("Error handling upload:", error);
         return new Response("Internal Server Error", { status: 500, headers: { "Content-Type": "text/html" } });
     }
