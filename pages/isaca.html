@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Client Form</title>
+    <title>Penetration Testing & Offensive Security Expertise</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     
-   
-    <title>Penetration Testing & Offensive Security Expertise</title>
-    
-    <!-- 
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-     -->
-
     <style>
         :root {
-            --primary-color: #003366; /* ISACA Deep Blue */
-            --secondary-color: #00b0f0; /* Accent Cyan/Blue */
-            --dark-bg: #111827;
-            --light-bg: #f8fafc;
-            --text-main: #334155;
-            --text-light: #64748b;
-            --border-color: #e2e8f0;
+            /* 1. Foundation Neutrals (60%) */
+            --light-bg: #FDFBF7;
+            --text-main: #1A1D24;
+            --card-bg: #F2EFE9;
+            --border-color: #E2DDD5;
+
+            /* 2. Structural & Brand Colors (30%) */
+            --primary-brand: #368BA3; /* greenish */
+            --secondary-brand: #BF8040; /* Golden Brown */
+
+            /* 3. High-Contrast Action Colors (10%) */
+            --cta-color: #950495; /* Deep Magenta */
+            --cta-hover: #780378;
         }
 
         * {
@@ -36,13 +35,13 @@
 
         body {
             color: var(--text-main);
-            background-color: #fff;
+            background-color: var(--light-bg);
             line-height: 1.6;
         }
 
         /* Header / Nav */
         header {
-            background-color: #fff;
+            background-color: var(--light-bg);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
@@ -61,13 +60,13 @@
         .logo {
             font-weight: 700;
             font-size: 1.25rem;
-            color: var(--primary-color);
+            color: var(--primary-brand);
             text-decoration: none;
             letter-spacing: -0.5px;
         }
 
         .logo span {
-            color: var(--secondary-color);
+            color: var(--secondary-brand);
         }
 
         .nav-links {
@@ -85,12 +84,12 @@
         }
 
         .nav-links a:hover {
-            color: var(--secondary-color);
+            color: var(--primary-brand);
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+            background: linear-gradient(135deg, var(--primary-brand) 0%, #1A1D24 100%);
             color: #fff;
             padding: 5rem 2rem;
             text-align: center;
@@ -110,15 +109,15 @@
 
         .hero p {
             font-size: 1.15rem;
-            color: #cbd5e1;
+            color: #E2DDD5;
             margin-bottom: 2rem;
             font-weight: 300;
         }
 
         .btn {
             display: inline-block;
-            background-color: var(--secondary-color);
-            color: var(--primary-color);
+            background-color: var(--cta-color);
+            color: #fff;
             padding: 0.75rem 2rem;
             border-radius: 4px;
             font-weight: 600;
@@ -127,7 +126,7 @@
         }
 
         .btn:hover {
-            background-color: #38bdf8;
+            background-color: var(--cta-hover);
             transform: translateY(-2px);
         }
 
@@ -140,15 +139,24 @@
 
         .section-title {
             font-size: 2rem;
-            color: var(--primary-color);
+            color: var(--primary-brand);
             margin-bottom: 1rem;
             font-weight: 700;
         }
 
         .section-subtitle {
-            color: var(--text-light);
+            color: #4A5160;
             font-size: 1.05rem;
             margin-bottom: 3rem;
+        }
+
+        .credentials-header {
+            max-width: 1200px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .credentials-header .section-subtitle {
+            margin-bottom: 0;
         }
 
         /* Grid Cards Section */
@@ -160,7 +168,7 @@
         }
 
         .card {
-            background: #fff;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 2rem;
@@ -181,83 +189,82 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 700;
-            color: var(--secondary-color);
+            color: var(--secondary-brand);
             margin-bottom: 0.5rem;
         }
 
         .card h3 {
             font-size: 1.25rem;
-            color: var(--primary-color);
+            color: var(--primary-brand);
             margin-bottom: 1rem;
         }
 
         .card p {
-            color: var(--text-light);
+            color: #4A5160;
             font-size: 0.95rem;
             margin-bottom: 1.5rem;
         }
 
         .card-link {
-            color: var(--primary-color);
+            color: var(--primary-brand);
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rpx;
+            gap: 0.5rem;
         }
 
         .card-link:hover {
-            color: var(--secondary-color);
+            color: var(--secondary-brand);
         }
 
-        /* Credentials Section */
+        /* Process Flow Image Section */
         .credentials-section {
-            background-color: var(--light-bg);
+            background-color: var(--card-bg);
             padding: 4rem 2rem;
             border-top: 1px solid var(--border-color);
             border-bottom: 1px solid var(--border-color);
+            text-align: center;
         }
 
-        .creds-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+        .process-image-container {
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        .cred-card {
-            background: #fff;
-            padding: 1.5rem;
-            border-radius: 6px;
-            border-left: 4px solid var(--secondary-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .cred-card h4 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
-        }
-
-        .cred-card p {
-            font-size: 0.9rem;
-            color: var(--text-light);
+        .process-image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         /* Footer */
         footer {
-            background-color: var(--dark-bg);
-            color: #94a3b8;
-            padding: 3rem 2rem;
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-brand);
+        }
+
+        footer .footer-content {
+            position: relative;
+            z-index: 2;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
             text-align: center;
+            padding: 0 1rem;
         }
 
         footer p {
             font-size: 0.9rem;
         }
-    </p>
     </style>
 </head>
 <body>
@@ -265,11 +272,11 @@
     <!-- Navigation Bar -->
     <header>
         <div class="nav-container">
-            <a href="#" class="logo">RI<span>SEC</span></a>
+            <a href="#" class="logo">RI<span>SEC </span> ADVISE</a>
             <ul class="nav-links">
                 <li><a href="#expertise">Expertise</a></li>
                 <li><a href="#services">Capabilities</a></li>
-                <li><a href="#credentials">Certifications</a></li>
+                <li><a href="#credentials">Methodology</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -289,7 +296,7 @@
         <h2 class="section-title">Core Technical Capabilities</h2>
         <p class="section-subtitle">Real-world, hands-on security domain competencies designed to stress-test your enterprise posture.</p>
 
-        <div class="grid">
+        <div class="grid" id="services">
             <!-- Card 1 -->
             <div class="card">
                 <div>
@@ -322,31 +329,23 @@
         </div>
     </div>
 
-    <!-- Credentials / Background Section -->
+    <!-- Process / Methodology Section replacing Competencies -->
     <section class="credentials-section" id="credentials">
-        <div style="max-width: 1200px; margin: 0 auto; margin-bottom: 2.5rem;">
-            <h2 class="section-title">Professional Standards & Competencies</h2>
-            <p class="section-subtitle" style="margin-bottom: 0;">Built on continuous learning, industry-standard frameworks, and verifiable execution.</p>
+        <div class="credentials-header">
+            <h2 class="section-title">Web API Penetration Testing Methodology</h2>
+            <p class="section-subtitle">A comprehensive, end-to-end framework mapping scoping, threat discovery, vulnerability identification, and structured reporting.</p>
         </div>
-        <div class="creds-grid">
-            <div class="cred-card">
-                <h4>Advanced Red Teaming</h4>
-                <p>Advanced navigation through restricted networks, pivoting techniques, and stealth persistence emulation.</p>
-            </div>
-            <div class="cred-card">
-                <h4>Web & API Security</h4>
-                <p>Thorough OWASP Top 10 analysis, payload evaluation, and custom framework exploitation verification.</p>
-            </div>
-            <div class="cred-card">
-                <h4>Actionable Reporting</h4>
-                <p>Translating complex technical exploits into executive-level risk guidance and concrete remediation roadmaps.</p>
-            </div>
+        <div class="process-image-container">
+            <!-- Replace 'watermarked_img_13488641653838111500.jpg' with your hosted image source link if publishing live -->
+            <img src="../images/pentest.jpg" alt="Web API Penetration Testing Process Flowchart">
         </div>
     </section>
 
     <!-- Footer -->
     <footer id="contact">
-        <p>&copy; 2026 Offensive Security & Penetration Testing Portfolio. Inspired by professional IT training templates.</p>
+        <div class="footer-content">
+            <p>&copy; 2026 Risto Ikonen CONTACT: ri***@gmx.com (firstname).</p>
+        </div>
     </footer>
 
 </body>
