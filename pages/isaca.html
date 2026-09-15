@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Client Form</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+   
+    <title>Penetration Testing & Offensive Security Expertise</title>
+    
+    <!-- 
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+     -->
+
+    <style>
+        :root {
+            --primary-color: #003366; /* ISACA Deep Blue */
+            --secondary-color: #00b0f0; /* Accent Cyan/Blue */
+            --dark-bg: #111827;
+            --light-bg: #f8fafc;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            color: var(--text-main);
+            background-color: #fff;
+            line-height: 1.6;
+        }
+
+        /* Header / Nav */
+        header {
+            background-color: #fff;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--secondary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+            color: #fff;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Grid Cards Section */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rpx;
+        }
+
+        .card-link:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Credentials Section */
+        .credentials-section {
+            background-color: var(--light-bg);
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .creds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .cred-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .cred-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .cred-card p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-bg);
+            color: #94a3b8;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+    </p>
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">RI<span>SEC</span></a>
+            <ul class="nav-links">
+                <li><a href="#expertise">Expertise</a></li>
+                <li><a href="#services">Capabilities</a></li>
+                <li><a href="#credentials">Certifications</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1>Learn to Master the Threat Landscape Through Rigorous Penetration Testing</h1>
+            <p>Uncovering enterprise vulnerabilities before malicious actors do. Explore advanced ethical hacking, threat hunting, and targeted offensive security operations.</p>
+            <a href="#contact" class="btn">Get in Touch</a>
+        </div>
+    </section>
+
+    <!-- Capabilities / Core Areas -->
+    <div class="container" id="expertise">
+        <h2 class="section-title">Core Technical Capabilities</h2>
+        <p class="section-subtitle">Real-world, hands-on security domain competencies designed to stress-test your enterprise posture.</p>
+
+        <div class="grid">
+            <!-- Card 1 -->
+            <div class="card">
+                <div>
+                    <span class="card-tag">Offensive Security</span>
+                    <h3>Penetration Testing & Ethical Hacking</h3>
+                    <p>Simulating complex cyberattacks across web applications, cloud architectures, network infrastructures, and internal assets to find exploitable weaknesses.</p>
+                </div>
+                <a href="#contact" class="card-link">Learn More &rarr;</a>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card">
+                <div>
+                    <span class="card-tag">Analysis</span>
+                    <h3>Vulnerability Identification & Analysis</h3>
+                    <p>Deep-dive assessments to isolate system flaws, evaluate risk severity, prioritize patching frameworks, and reduce external/internal attack surfaces.</p>
+                </div>
+                <a href="#contact" class="card-link">Learn More &rarr;</a>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card">
+                <div>
+                    <span class="card-tag">Defense & Operations</span>
+                    <h3>Threat Hunting & Incident Response</h3>
+                    <p>Proactive adversary tracking within enterprise perimeters, analyzing indicators of compromise (IoCs), and hardening response measures.</p>
+                </div>
+                <a href="#contact" class="card-link">Learn More &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credentials / Background Section -->
+    <section class="credentials-section" id="credentials">
+        <div style="max-width: 1200px; margin: 0 auto; margin-bottom: 2.5rem;">
+            <h2 class="section-title">Professional Standards & Competencies</h2>
+            <p class="section-subtitle" style="margin-bottom: 0;">Built on continuous learning, industry-standard frameworks, and verifiable execution.</p>
+        </div>
+        <div class="creds-grid">
+            <div class="cred-card">
+                <h4>Advanced Red Teaming</h4>
+                <p>Advanced navigation through restricted networks, pivoting techniques, and stealth persistence emulation.</p>
+            </div>
+            <div class="cred-card">
+                <h4>Web & API Security</h4>
+                <p>Thorough OWASP Top 10 analysis, payload evaluation, and custom framework exploitation verification.</p>
+            </div>
+            <div class="cred-card">
+                <h4>Actionable Reporting</h4>
+                <p>Translating complex technical exploits into executive-level risk guidance and concrete remediation roadmaps.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <p>&copy; 2026 Offensive Security & Penetration Testing Portfolio. Inspired by professional IT training templates.</p>
+    </footer>
+
+</body>
+</html>
