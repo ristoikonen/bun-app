@@ -1,9 +1,9 @@
 import { GoogleGenAI } from '@google/genai';
 import { mkdir } from "node:fs/promises";
-import { Glob, CookieMap } from "bun";
+import { Glob,  BunRequest} from "bun";
 import { Auth } from "./auth";
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
-import testHashAndVerifyUserWithBackend from './services/security';
+
 import {getGoogleUserProfileFromCookie} from './services/cookie';
 import handleUpload from './handlers/upload';
 import verifyUserWithBackend, { verifyIdToken } from './handlers/verify';
@@ -11,6 +11,8 @@ import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
 import testformPage from "./pages/testform.html" with { type: "text" };
 import profilePage from "./pages/profile.html" with { type: "text" };
+import baseimagePage from "./pages/baseimage.html" with { type: "text" };
+
 import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
 import { OAuth2Client } from 'google-auth-library';
@@ -24,6 +26,7 @@ const THUMB_DIR = "./thumbnails";
 const RECT1_PNG = "./images/rect1.png";
 const RECT2_PNG = "./images/rect2.png";
 
+
 const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
@@ -32,35 +35,13 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
     await mkdir(UPLOAD_DIR, { recursive: true });
     await mkdir(THUMB_DIR, { recursive: true });
 
-    const theArgs = Bun.argv.slice(1);
-    console.log("Mains params:", theArgs);
-
-    const hashrunArg = theArgs.find(arg => arg.startsWith("--hashtest="));
-    if (hashrunArg) {
-        const runHashTest = hashrunArg.split("=")[1];  
-        if (runHashTest === "true") {
-            testHashAndVerifyUserWithBackend('abc');
-            process.exitCode = 0;
-            return;
-        }
-    }
-
-    const port = Number(Bun.env.PORT ?? 3000);
+    const port = Number(Bun.env.APP_PORT ?? 3000);
+    const host = Bun.env.APP_HOST ?? "localhost";
     const apiKey = Bun.env.GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Missing GEMINI_API_KEY environment variable.");
     }
-
     const ai = new GoogleGenAI();
-
-    interface IUserProfile {
-        firstName: string;
-        lastName: string;
-        email: string;
-        username: string;
-    }
-
-
 
 
     // Incoming req object is a BunRequest
@@ -93,6 +74,41 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             "/submit_newclient": {
                 POST: () => new Response("submit_newclient", { headers: { "Content-Type": "text/html" } })
             },
+            "/baseimage": {
+                GET: () => new Response(String(baseimagePage), { headers: { "Content-Type": "text/html" } })
+            },
+            "/upload": {
+                POST: async (req: BunRequest) => {
+
+try {
+        // 1. Parse multipart/form-data
+        const formData = await req.formData();
+        const file = formData.get("image"); // Matches the input field name
+
+        if (!file || !(file instanceof File)) {
+          return new Response("No valid file uploaded", { status: 400 });
+        }
+
+        // 2. Convert the uploaded File/Blob to a Uint8Array or ArrayBuffer
+        //const arrayBuffer = await file.arrayBuffer();
+        //const uint8Array = new Uint8Array(arrayBuffer);
+       
+        const processedBytes = await file.image()
+          .png({ compressionLevel: 65 })
+          .bytes();
+
+        return new Response(file, {
+          headers: { "Content-Type": "image/png" },
+        });
+
+
+
+      } catch (error) {
+        return new Response("Error processing upload", { status: 500 });
+      }
+
+                }
+            },
             "/signin": {
                 GET: () => {
                     const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
@@ -103,7 +119,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 }
             },
             "/api/auth/google": {
-                POST: async (req) => {
+                POST: async (req: BunRequest) => {
                     try {
                         return await verifyIdToken(req, client);
                     } catch (error) {
@@ -113,7 +129,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 }
             },
             "/": {
-                GET: async (req) => {
+                GET: async (req: BunRequest) => {
                     const googleuserprofile = getGoogleUserProfileFromCookie(req, "session_token")
                     let userprofile ='';
                     if (googleuserprofile) {
@@ -153,6 +169,8 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     const fileArrayData2 = Bun.file(RECT2_PNG);
                     if (await fileArrayData2.exists()) {
                         const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
+                        const byteSpan = new Uint8Array(await fileArrayData2.arrayBuffer());
+                        //TODO add format check
                         res = await askGeminiImageQuestion(ai, "Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains", image2) ?? "No analysis";
                     }
                     
@@ -187,14 +205,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                         console.error("Failed to parse session token:", error);
                         return Response.json({ error: "Invalid token" }, { status: 400 });
                     }
-
                 }
             },
 
-
            "/api/users/:id": {
 
-                GET: (req) => {
+                GET: (req: BunRequest) => {
                   //return Response.json({ message: `Fetching user ${req.params.id}` });
                           
                     // Mock Database
@@ -216,7 +232,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             "/googletoken": {
                 GET: () => {
                     const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
-                    const sport = Bun.env.PORT || "";
+                    const sport = String(port) || "";
                     const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", clientID).replace("__PORT__", sport);
                     return new Response(renderedHtml, { headers: { "Content-Type": "text/html" } });
                 }
@@ -228,6 +244,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     const formData = new FormData();
                     formData.append("image", blob, "test.jpg");
 
+                    const uri = `http://${Bun.env.APP_HOST}:${port}`;
                     const reqMock = new Request("http://localhost/upload", {
                         method: "POST",
                         body: formData,
@@ -240,9 +257,9 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 }
             }
         },
-        fetch() {
-            return new Response('Not Found', { status: 404 });
-        },
+        // fetch() {
+        //     return new Response('Not Found'); //, { status: 404 }
+        // },
     });
 
     console.log(`Bun server listening on http://${server.hostname}:${server.port}`);

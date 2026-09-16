@@ -1,6 +1,7 @@
-﻿// Bun resolves this runtime module, but TypeScript may not have Bun's ambient types configured.
-// @ts-expect-error -- bun:sqlite is provided by the Bun runtime.
-
+﻿
+//import { Database } from "bun:sqlite";
+// Bun resolves this built-in module at runtime even when its ambient types are unavailable.
+// @ts-expect-error Bun's type declarations are not loaded by this TypeScript configuration.
 import { Database } from "bun:sqlite";
 import { createClient } from "@libsql/client";
 

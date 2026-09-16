@@ -1,7 +1,7 @@
 ﻿import { GoogleGenAI } from '@google/genai';
 import { ai } from '../geminiClient';
 import { readdir } from "node:fs/promises";
-import { Glob } from "bun";
+import { Glob, env } from "bun";
 const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
 
@@ -34,4 +34,18 @@ export default async function testHashAndVerifyUserWithBackend(hashMe: string): 
         console.error("Error in testHash:", error);
         return "";
     }
+}
+
+// TODO: might be better to just not use this..
+ // Set the default User-Agent if it wasn't explicitly overridden
+export async function apiFetch( options: RequestInit = {}) : Promise<Headers>  {
+  const headers = new Headers(options.headers);
+  
+ 
+  if (!headers.has("User-Agent")) {
+    headers.set("User-Agent", Bun.env.APP_USER_AGENT || "");
+  }
+
+  return headers;
+  //return fetch(url, { ...options, headers });
 }

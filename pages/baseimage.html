@@ -116,7 +116,50 @@
             <h1>Artwork Title</h1>
             <p>This image is embedded directly into the HTML document using a Base64 encoded string, eliminating the need for an external image file host.</p>
         </div>
+
+        <form id="uploadForm">
+            <input type="file" id="imageInput" name="image" accept="image/*" required>
+            <button type="submit">Show thumb</button>
+        </form>
+
+        <div id="result" style="margin-top: 20px;"></div>
+
     </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            resultDiv.textContent = "Converting...";
+
+            try {
+                const response = await fetch('http://localhost:3000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Conversion failed');
+                }
+
+                // Get the converted image back as a Blob and display it
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+
+                resultDiv.innerHTML = `
+                    <p>Success!</p>
+                    <img src="${imageUrl}" alt="Converted PNG" style="max-width: 300px; display: block; margin-bottom: 10px;">
+                    <a href="${imageUrl}" download="converted.png">Download PNG</a>
+                `;
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -1,4 +1,21 @@
+/*
 
+import testHashAndVerifyUserWithBackend from './services/security';
+
+
+    const theArgs = Bun.argv.slice(1);
+    console.log("Mains params:", theArgs);
+
+    const hashrunArg = theArgs.find(arg => arg.startsWith("--hashtest="));
+    if (hashrunArg) {
+        const runHashTest = hashrunArg.split("=")[1];  
+        if (runHashTest === "true") {
+            testHashAndVerifyUserWithBackend('abc');
+            process.exitCode = 0;
+            return;
+        }
+    }
+*/ 
 
 export default function hashGoogleSub(googleSub: string): string {
 
