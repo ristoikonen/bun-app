@@ -109,7 +109,9 @@
     <div class="card">
         <div class="image-container">
             <!-- Replace the placeholder string inside src="" with your actual Base64 data string -->
+             <div id="result" style="margin-top: 20px;">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAABbElEQVR4nO3TsXEDQAgAQdC4/0ztCo9sVaHbTX74lGOfP8+bnbm727ebuZ2/j9fsPoZv9r/fm9nZfb/3mcfyExx4nADiBBAngDgBxAkgTgBxAogTQJwA4gQQJ4A4AcQJIE4AcQKIE0CcAOIEECeAOAHECSBOAHECiBNAnADiBBAngDgBxAkgTgBxAogTQJwA4gQQJ4A4AcQJIE4AcQKIE0CcAOIEECeAOAHECSBOAHECiBNAnADiBBAngDgBxAkgTgBxAogTQJwA4gQQJ4A4AcQJIE4AcQKIE0CcAOIEECeAOAHECSBOAHECiBNAnADiBBAngDgBxAkgTgBxAogTQJwA4gQQJ4A4AcQJIE4AcQKIE0CcAOIEECeAOAHECSBOAHECiBNAnADiBBAngDgBxAkgTgBxAogTQJwA4gQQJ4A4AcQJIE4AcQKIE0CcAOIEECeAOAHECSBOAHECiBNAnADiBBAngDgBxAkg7hdIIhEwgo4lWwAAAABJRU5ErkJggg==" alt="Showcase Embedded Image">
+            </div>
         </div>
         <div class="card-content">
             <span class="badge">Base64 Rendered</span>
@@ -133,9 +135,19 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            let filesize = 0;
+            let diff = 0;
             const formData = new FormData(form);
             resultDiv.textContent = "Converting...";
-
+            console.log(formData);
+            if(formData.has('image'))
+            {
+                filesize = formData.get("image")?.size || 0;; 
+            }
+            
+            //orig size
+            console.log(filesize);
+            
             try {
                 const response = await fetch('http://localhost:3000/upload', {
                     method: 'POST',
@@ -148,10 +160,19 @@
 
                 // Get the converted image back as a Blob and display it
                 const blob = await response.blob();
+                const blogsize = blob.size;
+                console.log(blogsize);
+
+                if(filesize > 0)
+                {
+                    let diff = filesize / blogsize;
+                    console.log(diff);
+                    console.log(diff);
+                }
                 const imageUrl = URL.createObjectURL(blob);
 
                 resultDiv.innerHTML = `
-                    <p>Success!</p>
+                    <p>Diff:"${diff}"</p>
                     <img src="${imageUrl}" alt="Converted PNG" style="max-width: 300px; display: block; margin-bottom: 10px;">
                     <a href="${imageUrl}" download="converted.png">Download PNG</a>
                 `;

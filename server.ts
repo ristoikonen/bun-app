@@ -80,33 +80,51 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             "/upload": {
                 POST: async (req: BunRequest) => {
 
-try {
-        // 1. Parse multipart/form-data
-        const formData = await req.formData();
-        const file = formData.get("image"); // Matches the input field name
+                    try {
+                        const url = new URL(req.url);
+                        const variant = url.searchParams.get("variant");
 
-        if (!file || !(file instanceof File)) {
-          return new Response("No valid file uploaded", { status: 400 });
-        }
+                        // 1. Parse multipart/form-data
+                        const formData = await req.formData();
+                        const file = formData.get("image"); // Matches the input field name
 
-        // 2. Convert the uploaded File/Blob to a Uint8Array or ArrayBuffer
-        //const arrayBuffer = await file.arrayBuffer();
-        //const uint8Array = new Uint8Array(arrayBuffer);
-       
-        const processedBytes = await file.image()
-          .png({ compressionLevel: 65 })
-          .bytes();
+                        if (!file || !(file instanceof File)) {
+                            return new Response("No valid file uploaded", { status: 400 });
+                        }
 
-        return new Response(file, {
-          headers: { "Content-Type": "image/png" },
-        });
+                        //TODO: If you need a placeholder
+                        /*
+                        return Response.json({
+                            placeholder: `/upload/placeholder`,
+                            thumbnail: `/upload/thumbnail`,
+                            original: `/api/image/${imageId}?variant=original`,
+                        });
+                        const data = await response.json();
+                        placeholderImage.src = data.placeholder;
+                        thumbnailImage.src = data.thumbnail; /
+                        */
 
+                        if (variant === "placeholder") {
+                            // img.jpeg({ progressive: true });
+                            const placeholder = await file.image().placeholder();
+                            return new Response(placeholder, {
+                                headers: { "Content-Type": "image/png" },
+                            });
+                        }
 
+                        const out = await file.image().resize(256).png().blob();
+                    
+                        const processedBytes = await file.image()
+                            .png({ compressionLevel: 60 })
+                            .bytes();
 
-      } catch (error) {
-        return new Response("Error processing upload", { status: 500 });
-      }
+                        return new Response(out, {
+                            headers: { "Content-Type": "image/png" },
+                        });
 
+                    } catch (error) {
+                        return new Response("Error processing upload", { status: 500 });
+                    }
                 }
             },
             "/signin": {
