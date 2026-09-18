@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1110.0",
+    "@flood/element": "^2.0.4",
     "@google/genai": "^2.19.0",
     "@libsql/client": "^0.18.0",
     "googleapis": "^178.0.0",
