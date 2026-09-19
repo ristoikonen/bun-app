@@ -1,11 +1,12 @@
 
-//USAGE: bunx element run  services/loadtest.ts 
-//USAGE: runLoadTest();
+//USAGE: bunx element run  services/httpstress.ts 
+//USAGE (comment method at the end): runLoadTest();
 
 //import { step, TestSettings, By, Until } from '@flood/element'
 
-const port = Bun.env.APP_PORT
-const LOCALHOST_URL = "http://localhost:" + port + '/';
+const port = bun.env.APP_PORT
+const host = bun.env.APP_HOST
+const LOCALHOST_URL = "http://" + host+ ":" + port + '/';
 
 
 interface TestStats {
@@ -17,20 +18,21 @@ interface TestStats {
 async function hitEndpoint(stats: TestStats) {
   const start = globalThis.performance.now();
   try {
-    const response = await fetch(LOCALHOST_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Bun Tester", timestamp: Date.now() }),
+    bun.connect({
+      hostname: host,
+      port: port,  
+      socket: {
+        open(socket) {
+          socket.write(rawRequest);
+        },
+        data(socket, data) {
+          socket.end();
+        },
+        error(socket, err) {
+          console.error(err);
+        }
+      }
     });
-
-    const duration = globalThis.performance.now() - start;
-    stats.latencies.push(duration);
-
-    if (response.ok) {
-      stats.success++;
-    } else {
-      stats.failure++;
-    }
   } catch (error) {
     stats.failure++;
   }

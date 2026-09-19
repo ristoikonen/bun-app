@@ -12,6 +12,7 @@ import newclientForm from "./pages/newclient.html" with { type: "text" };
 import testformPage from "./pages/testform.html" with { type: "text" };
 import profilePage from "./pages/profile.html" with { type: "text" };
 import baseimagePage from "./pages/baseimage.html" with { type: "text" };
+import glowPage from "./pages/glow.html" with { type: "text" };
 
 import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
@@ -77,6 +78,67 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             "/baseimage": {
                 GET: () => new Response(String(baseimagePage), { headers: { "Content-Type": "text/html" } })
             },
+
+
+
+
+
+
+
+
+
+
+    "/api/stream" : {
+        GET: (req) => {
+      const stream = new ReadableStream({
+        start(controller) {
+          const intervalId = setInterval(() => {
+            const states = ["healthy", "warning", "critical"];
+            
+            // Randomly rotate states for visualization testing
+            const payload = {
+              message: 'Estim round 10',
+              locale: 'Palm',
+              timestamp: new Date().toLocaleTimeString('en-AU'),
+              nodes: {
+                nodeA: { status: states[Math.floor(Math.random() * states.length)] },
+                nodeB: { status: states[Math.floor(Math.random() * states.length)] }
+              }
+            };
+
+            controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
+          }, 1000);
+
+          req.signal.addEventListener("abort", () => {
+            clearInterval(intervalId);
+          });
+        }
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        },
+      });
+    }
+
+    
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
             "/upload": {
                 POST: async (req: BunRequest) => {
 
@@ -205,6 +267,9 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             },
             "/profilepage": {
                 GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/glow": {
+                GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
                 // serves user data to profile -page!

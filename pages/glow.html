@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Live Glowing Infrastructure Map</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h2 { margin-bottom: 5px; font-weight: 500; }
+        #clock { color: #9ca3af; margin-bottom: 20px; font-size: 14px; }
+
+        /* Define the smooth transition for color changes */
+        .map-node {
+            transition: fill 0.3s ease, filter 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Status Styling with Custom Glowing CSS Filters */
+        .status-healthy {
+            fill: #10b981; /* Vivid Emerald Green */
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
+        }
+
+        .status-warning {
+            fill: #f59e0b; /* Amber Amber/Orange */
+            filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.8));
+        }
+
+        .status-critical {
+            fill: #ef4444; /* Bright Crimson Red */
+            filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.9));
+            /* Add an optional critical pulse animation */
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6)); }
+            to { filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1)); }
+        }
+        .v_plus{
+            visibility: hidden;
+        }
+        .v_minus{
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+<!-- 
+    <h2>Live Infrastructure Map</h2>
+    <div id="clock">Awaiting stream...</div>
+    <h3 class="v-minus" id="locale">not vis</h3>
+    <h3 class="v-minus" id="message">not vis</h3>
+ -->
+
+<!--     
+    <svg width="600" height="350" style="background: #111827; border: 1px solid #1f2937; border-radius: 12px;">
+   
+        <circle id="nodeA" class="map-node" cx="180" cy="175" r="45" stroke="#374151" stroke-width="2" />
+        <text x="180" y="180" fill="#ffffff" font-size="12" text-anchor="middle" pointer-events="none">Node A</text>
+
+   
+        <rect id="nodeB" class="map-node" x="360" y="130" width="130" height="90" rx="8" stroke="#374151" stroke-width="2" />
+        <text x="425" y="180" fill="#ffffff" font-size="12" text-anchor="middle" pointer-events="none">Node B</text>
+    </svg> 
+-->
+
+<h2  class="v-minus" id="message2"></h2>
+
+<svg width="450" height="600" style="background: #0b0f19; border: 0px solid #1f2937; border-radius: 12px;" xmlns="http://w3.org">
+  <!-- Defs for glow effects (status indicators) -->
+  <defs>
+    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Title Label -->
+  <text x="225" y="60" fill="#9ca3af" font-size="14" font-family="sans-serif" letter-spacing="2" text-anchor="middle" class="v-minus" id="message"></text>
+
+  <!-- ================= PALMERSTON NODE (Top Right - RED) ================= -->
+  <!-- Status Light Glow -->
+  <circle id="nodePalmerston" cx="290" cy="160" r="55" fill="#ef4444" opacity="0.75" filter="url(#glow-red)" />
+  <!-- Main Node Circle -->
+  <circle id="mapnodePalmerston" class="map-node" cx="290" cy="160" r="50" fill="#1f2937" stroke="#ef4444" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="290" y="165" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Palmerston</text>
+  <text x="291" y="178" fill="#ffffff" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="middle" pointer-events="none">10:10</text>
+
+  <!-- ================= CRACE NODE (Middle Right - GREEN) ================= -->
+  <!-- Status Light Glow -->
+  <circle cx="270" cy="280" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <circle id="nodeCrace" class="map-node" cx="270" cy="280" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="270" y="285" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Crace</text>
+
+  <!-- ================= GIRALANG NODE (Middle Left - GREEN) ================= -->
+  <!-- Status Light Glow -->
+  <circle id="nodeGiralang" cx="150" cy="300" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <circle id="mapnodeGiralang" class="map-node" cx="150" cy="300" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="150" y="305" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Giralang</text>
+
+  <!-- ================= KALEEN NODE (Bottom Left / Center - GREEN) ================= -->
+  <!-- Status Light Glow -->
+  <circle cx="210" cy="420" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <circle id="nodeKaleen" class="map-node" cx="210" cy="420" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="210" y="425" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Kaleen</text>
+</svg>
+
+
+    <script>
+        const source = new EventSource('/api/stream');
+
+
+        source.onmessage = (event) => {
+            
+            const palmerstonNode = document.getElementById('nodePalmerston');
+            const giralangNode = document.getElementById('nodeGiralang');
+
+/*             if (giralangNode) {
+                palmerstonNode.style.filter = 'drop-shadow(0px 0px 8px rgba(16, 185, 129, 0.6))';
+            }
+            if (giralangNode) {
+                giralangNode.style.filter = 'drop-shadow(0px 0px 8px rgba(239, 68, 68, 0.6))';
+            } */
+
+            palmerstonNode.setAttribute('filter', 'url(#glow-green)');
+            giralangNode.setAttribute('filter', 'url(#glow-red)');
+
+            const data = JSON.parse(event.data);
+            
+            const msg = data.message || '';
+           //document.getElementById('clock').innerText = `Last System Scan: ${data.timestamp}`;
+            document.getElementById('message').innerText = `${data.message}`;
+            document.getElementById('message2').innerText = `${data.message}`;
+            //document.getElementById('locale').innerText = `Coffee spot: ${data.locale}`;
+            console.log(msg);
+            updateNodeVisuals('message', msg ==='');
+            updateNodeVisuals('locale', data.nodes.nodeB.status);
+
+
+
+            // Handle Node A State
+            updateNodeVisuals('nodeA', data.nodes.nodeA.status);
+
+            // Handle Node B State
+            updateNodeVisuals('nodeB', data.nodes.nodeB.status);
+
+
+
+
+
+        };
+
+        // Clean function to swap layout classes dynamically
+        function updateNodeVisuals(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            if(element === 'locale' || element === 'message'|| element === 'message2')
+            {
+                if (status === 'v-minus') {
+                    element.classList.remove('v-minus');
+                    element.classList.add('v-plus');
+                }
+            }
+            // Reset status tracking classes 
+            element.classList.remove('status-healthy', 'status-warning', 'status-critical');
+            // Apply target conditional glow map layout
+            if (status === 'healthy') {
+                element.classList.add('status-healthy');
+            } else if (status === 'warning') {
+                element.classList.add('status-warning');
+            } else if (status === 'critical') {
+                element.classList.add('status-critical');
+            }
+        }
+
+        //source.onerror = () => {
+        //    document.getElementById('clock').innerText = "Reconnecting to live telemetry loop...";
+        //};
+    </script>
+</body>
+</html>
