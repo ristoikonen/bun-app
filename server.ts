@@ -107,7 +107,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             };
 
             controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
-          }, 1000);
+          }, 5000);
 
           req.signal.addEventListener("abort", () => {
             clearInterval(intervalId);

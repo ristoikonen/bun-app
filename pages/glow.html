@@ -86,7 +86,7 @@
 
 <h2  class="v-minus" id="message2"></h2>
 
-<svg width="450" height="600" style="background: #0b0f19; border: 0px solid #1f2937; border-radius: 12px;" xmlns="http://w3.org">
+<svg title="ba" id="balls" width="450" height="600" style="background: #0b0f19; border: 0px solid #1f2937; border-radius: 12px;" xmlns="http://w3.org">
   <!-- Defs for glow effects (status indicators) -->
   <defs>
     <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
@@ -104,7 +104,7 @@
 
   <!-- ================= PALMERSTON NODE (Top Right - RED) ================= -->
   <!-- Status Light Glow -->
-  <circle id="nodePalmerston" cx="290" cy="160" r="55" fill="#ef4444" opacity="0.75" filter="url(#glow-red)" />
+  <circle id="nodePalmerston" cx="290" cy="160" r="55" fill="#ef4444" opacity="0.75" filter="url(#glow-green)" />
   <!-- Main Node Circle -->
   <circle id="mapnodePalmerston" class="map-node" cx="290" cy="160" r="50" fill="#1f2937" stroke="#ef4444" stroke-width="2" />
   <!-- Text Label -->
@@ -139,12 +139,113 @@
 
     <script>
         const source = new EventSource('/api/stream');
+        const svgObject = document.querySelector('#balls');
+        const svgId = document.getElementById('balls');
+        //const svgD = document.embeds["ba"];//.getSVGDocument();
+        
+        console.log(svgObject);
+        //console.log(svgId);
+        
 
+        //svgD.getElementById('nodeGiralang');
+        //if (giralangNode) {
+        //    giralangNode.setAttribute('filter', 'url(#glow-red)');
+        //}
+/*
+        ballsy.addEventListener('load', () => {
+        const svgDoc = ballsy.contentDocument;
+        console.log(svgDoc);
+        const giralangNode = svgDoc.getElementById('nodeGiralang');
+        if (giralangNode) {
+            giralangNode.setAttribute('filter', 'url(#glow-red)');
+        }
+
+  }    
+);
+*/
+svgObject.addEventListener('load', () => {
+
+    //var shapeContent = event.target;
+
+            //const svgId = document.getElementById('balls');
+        //const svgD = document.embeds["ba"];//.getSVGDocument();
+        
+
+        //console.log(svgId);
+        
+    //const svgDoc = svgId.contentDocument;
+    //console.log(svgDoc);
+    // 1. Get the SVG internal document
+    //const svgDoc = shapeContent.contentDocument;
+    //svgId.setAttribute('filter', 'url(#glow-red)');
+    // 2. Use querySelector inside the SVG
+    //const giralangNode = svgId.querySelector('#nodeGiralang');
+    //giralangNode.setAttribute('fill', '#ef4444'); //url(#glow-red)
+
+});
 
         source.onmessage = (event) => {
+            const ballsy = document.querySelector('balls');
+            //const svgDoc = svgObject.contentDocument;
+             //const svgDoc = ballsy.contentDocument;
+             //console.log(svgDoc);
+
+             const oldSvg = document.getElementById('balls');
+
+
+
+    console.log("Telemetry Received:", event.data);
+ const edata = event.data;
+
+    // 2. Drive the state transformations based on your stream data
+    // Assuming your stream data passes an object structure like data.nodes.nodePalmerston.status
+    if (edata.nodes) {
+        if (edata.nodes.nodePalmerston) {
+            updateNodeVisuals('mapnodePalmerston', 'nodePalmerston', edata.nodes.nodePalmerston.status);
+        }
+        if (edata.nodes.nodeGiralang) {
+            updateNodeVisuals('mapnodeGiralang', 'nodeGiralang', edata.nodes.nodeGiralang.status);
+        }
+    }
+
+              
+            const palmerstonNode = document.querySelector('nodePalmerston');
+            const giralangNode = document.querySelector('nodeGiralang');
+
             
-            const palmerstonNode = document.getElementById('nodePalmerston');
-            const giralangNode = document.getElementById('nodeGiralang');
+
+                        const svgId = document.getElementById('balls');
+        //const svgD = document.embeds["ba"];//.getSVGDocument();
+        
+
+        //console.log(svgId);
+        
+    //const svgDoc = svgId.contentDocument;
+    //console.log(svgDoc);
+    // 1. Get the SVG internal document
+    //const svgDoc = shapeContent.contentDocument;
+
+    //sets; no effect
+    //svgId.setAttribute('filter', 'url(#glow-red)');
+    
+    // 2. Use querySelector inside the SVG
+    const giralangNode2 = svgId.querySelector('#nodeGiralang');
+    console.log(giralangNode2);
+    giralangNode2.removeAttribute('filter');
+    giralangNode2.removeAttribute('fill');
+    giralangNode2.setAttribute('filter', 'url(#glow-red)');
+ giralangNode2.setAttribute('fill', '#ef4444'); 
+
+
+    if (oldSvg) {
+    // 1. Create an exact deep copy of the SVG and all its internal children
+    const refreshedSvg = oldSvg.cloneNode(true);
+    
+    // 2. Swap the old SVG container out for the freshly instantiated one
+    oldSvg.parentNode.replaceChild(refreshedSvg, oldSvg);
+    
+    console.log("SVG layout engine fully refreshed!");
+}
 
 /*             if (giralangNode) {
                 palmerstonNode.style.filter = 'drop-shadow(0px 0px 8px rgba(16, 185, 129, 0.6))';
@@ -153,8 +254,8 @@
                 giralangNode.style.filter = 'drop-shadow(0px 0px 8px rgba(239, 68, 68, 0.6))';
             } */
 
-            palmerstonNode.setAttribute('filter', 'url(#glow-green)');
-            giralangNode.setAttribute('filter', 'url(#glow-red)');
+            //palmerstonNode.setAttribute('filter', 'url(#glow-green)');
+            //giralangNode.setAttribute('filter', 'url(#glow-red)');
 
             const data = JSON.parse(event.data);
             
@@ -164,16 +265,16 @@
             document.getElementById('message2').innerText = `${data.message}`;
             //document.getElementById('locale').innerText = `Coffee spot: ${data.locale}`;
             console.log(msg);
-            updateNodeVisuals('message', msg ==='');
-            updateNodeVisuals('locale', data.nodes.nodeB.status);
+            //updateNodeVisuals('message', msg ==='');
+            //updateNodeVisuals('locale', data.nodes.nodeB.status);
 
 
 
             // Handle Node A State
-            updateNodeVisuals('nodeA', data.nodes.nodeA.status);
+            //updateNodeVisuals('nodeA', data.nodes.nodeA.status);
 
             // Handle Node B State
-            updateNodeVisuals('nodeB', data.nodes.nodeB.status);
+            // updateNodeVisuals('nodeB', data.nodes.nodeB.status);
 
 
 
@@ -204,6 +305,38 @@
                 element.classList.add('status-critical');
             }
         }
+
+
+        function updateNodeVisuals(nodeId, glowId, status) {
+    const nodeEl = document.getElementById(nodeId);
+    const glowEl = document.getElementById(glowId);
+    
+    if (!nodeEl || !glowEl) return;
+
+    // Reset status tracking classes on both elements
+    nodeEl.classList.remove('status-healthy', 'status-warning', 'status-critical');
+    glowEl.classList.remove('status-healthy', 'status-warning', 'status-critical');
+
+    // Define color mappings for the attributes fallback
+    const colorMap = {
+        healthy: { fill: '#10b981', filter: 'url(#glow-green)' },
+        warning: { fill: '#f59e0b', filter: 'url(#glow-green)' }, // assuming you have or map to an ambient filter
+        critical: { fill: '#ef4444', filter: 'url(#glow-red)' }
+    };
+
+    const targetColors = colorMap[status];
+
+    if (targetColors) {
+        // Apply your pre-configured CSS classes (handles the drop shadow filter & pulse animations)
+        nodeEl.classList.add(`status-${status}`);
+        glowEl.classList.add(`status-${status}`);
+
+        // Inline attribute overwrites for old explicit SVG values
+        glowEl.setAttribute('fill', targetColors.fill);
+        glowEl.setAttribute('filter', targetColors.filter);
+        nodeEl.setAttribute('stroke', targetColors.fill);
+    }
+}
 
         //source.onerror = () => {
         //    document.getElementById('clock').innerText = "Reconnecting to live telemetry loop...";
