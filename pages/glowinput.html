@@ -3,13 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Glow Data Input</title>
-
-    <!-- Google Fonts -->
-    
-
-    <!-- Tailwind CSS CDN -->
+    <title>IGlowData Telemetry Portal (AU)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -25,21 +19,16 @@
             }
         }
     </script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-glowBlue selection:text-white">
 
     <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-glowPurple via-glowBlue to-glowAmber flex items-center justify-center shadow-lg shadow-glowPurple/20">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,9 +37,9 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-glowAmber via-glowBlue to-glowPurple bg-clip-text text-transparent">
-                        IGlowData Portal
+                        IGlowData Telemetry (AU)
                     </h1>
-                    <p class="text-xs text-slate-400">Node Telemetry & State Manager</p>
+                    <p class="text-xs text-slate-400">Standardized EN-AU Timestamp Feed</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -62,71 +51,54 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
         <!-- Form Section (Left Column) -->
-        <div class="lg:col-span-7 space-y-6">
+        <div class="md:col-span-7 space-y-6">
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-glowPurple/5 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                <h2 class="text-xl font-semibold text-white mb-5 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-glowAmber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
-                    Telemetry Payload Form
+                    IGlowData Payload Input
                 </h2>
                 
                 <form id="glowForm" class="space-y-5" onsubmit="return false;">
                     <!-- Message Field -->
                     <div>
                         <label for="messageInput" class="block text-sm font-medium text-slate-300 mb-1.5">Message</label>
-                        <input type="text" id="messageInput" value="System operational check normal." 
+                        <input type="text" id="messageInput" value="Australian regional telemetry node operational." 
                             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-glowBlue focus:ring-1 focus:ring-glowBlue transition text-sm">
                     </div>
 
                     <!-- Locale Field -->
                     <div>
-                        <label for="localeSelect" class="block text-sm font-medium text-slate-300 mb-1.5">Locale</label>
+                        <label for="localeInput" class="block text-sm font-medium text-slate-300 mb-1.5">Locale</label>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
                             <button type="button" onclick="setLocale('Palm')" class="locale-btn px-3 py-2 text-xs font-medium rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:border-glowAmber transition">Palm</button>
                             <button type="button" onclick="setLocale('Crace')" class="locale-btn px-3 py-2 text-xs font-medium rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:border-glowBlue transition">Crace</button>
                             <button type="button" onclick="setLocale('Kaleen')" class="locale-btn px-3 py-2 text-xs font-medium rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:border-glowPurple transition">Kaleen</button>
                             <button type="button" onclick="setLocale('Gira')" class="locale-btn px-3 py-2 text-xs font-medium rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:border-glowRed transition">Gira</button>
                         </div>
-                        <input type="text" id="localeInput" value="Palm" placeholder="Or type custom locale..." 
+                        <input type="text" id="localeInput" value="Palm" placeholder="Select or type custom locale..." 
                             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-glowBlue focus:ring-1 focus:ring-glowBlue transition text-sm">
                     </div>
 
-                    <!-- Timestamp Field -->
+                    <!-- Timestamp Field (AU Format & Editable) -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <label for="timestampInput" class="block text-sm font-medium text-slate-300">Timestamp</label>
+                            <label for="timestampInput" class="block text-sm font-medium text-slate-300">Timestamp (en-AU Format, Editable)</label>
                             <button type="button" onclick="refreshTimestamp()" class="text-xs text-glowBlue hover:underline flex items-center">
                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                 </svg>
-                                Sync Current Time
+                                Sync Current Time (AU)
                             </button>
                         </div>
-                        <input type="text" id="timestampInput" placeholder="Enter custom timestamp..." 
+                        <input type="text" id="timestampInput" placeholder="Enter custom time..." 
                             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 font-mono text-sm focus:outline-none focus:border-glowBlue focus:ring-1 focus:ring-glowBlue transition">
-                    </div>
-
-                    <!-- Nodes Collection Builder -->
-                    <div class="pt-2 border-t border-slate-800">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="block text-sm font-medium text-slate-300">Nodes Collection (INodesCollection)</label>
-                            <button type="button" onclick="addNodeModalOpen()" class="px-3 py-1.5 bg-glowBlue/10 border border-glowBlue/30 hover:bg-glowBlue/20 text-glowBlue rounded-lg text-xs font-medium transition flex items-center">
-                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Add Node
-                            </button>
-                        </div>
-
-                        <div id="nodesListContainer" class="space-y-3 max-h-64 overflow-y-auto pr-1">
-                            <!-- Dynamic nodes get injected here -->
-                        </div>
                     </div>
 
                     <!-- Action Buttons -->
@@ -135,7 +107,7 @@
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
-                            Submit IGlowData Payload
+                            Dispatch Payload
                         </button>
                         <button type="button" onclick="resetForm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 px-4 rounded-xl text-sm transition">
                             Reset
@@ -145,8 +117,7 @@
             </div>
         </div>
 
-        <!-- Live JSON Preview & Feedback (Right Column) -->
-        <div class="lg:col-span-5 flex flex-col space-y-6">
+        <div class="md:col-span-5 flex flex-col space-y-6">
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col h-full">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-white flex items-center">
@@ -164,14 +135,14 @@
                 </div>
 
                 <!-- Code Block View -->
-                <div class="relative bg-slate-950 rounded-xl border border-slate-800/80 p-4 flex-grow font-mono text-xs overflow-x-auto">
-                    <pre id="jsonPreviewOutput" class="text-glowBlue leading-relaxed"></pre>
+                <div class="relative bg-slate-950 rounded-xl border border-slate-800/80 p-4 font-mono text-xs overflow-x-auto min-h-[180px] flex items-center">
+                    <pre id="jsonPreviewOutput" class="text-glowBlue leading-relaxed w-full"></pre>
                 </div>
 
                 <!-- Submission Status Log -->
                 <div class="mt-4 pt-4 border-t border-slate-800">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-medium text-slate-400">Action Status</span>
+                        <span class="text-xs font-medium text-slate-400">Transmission Status</span>
                         <span id="statusIndicator" class="inline-block w-2 h-2 rounded-full bg-slate-600"></span>
                     </div>
                     <div id="statusMessage" class="text-xs text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800 min-h-[42px] flex items-center">
@@ -182,68 +153,29 @@
         </div>
     </main>
 
-    <!-- Modal for adding/editing node -->
-    <div id="nodeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-            <h3 class="text-lg font-semibold text-white mb-4">Add or Edit Node</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Node Key Name (e.g., nodeC, hubMain)</label>
-                    <input type="text" id="modalNodeKey" placeholder="nodeC" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-glowBlue">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
-                    <select id="modalNodeStatus" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-glowBlue">
-                        <option value="online">Online</option>
-                        <option value="offline">Offline</option>
-                        <option value="maintenance">Maintenance</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closeNodeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm">Cancel</button>
-                    <button type="button" onclick="saveNodeModal()" class="px-4 py-2 bg-glowBlue text-white rounded-xl text-sm hover:opacity-90">Save Node</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500 bg-slate-900/40">
-        IGlowData Portal • Palette Accent: #BF8040 (Amber), #406ABF (Blue), #BF4040 (Red), #950495 (Purple)
+        IGlowData Portal (en-AU) • Accents: #BF8040, #406ABF, #BF4040, #950495
     </footer>
 
     <script>
-        // Initial application state conforming to IGlowData
+        // Initialize state conforming to IGlowData interface with en-AU time format
         let appState = {
-            message: "System operational check normal.",
+            message: "Australian regional telemetry node operational.",
             locale: "Palm",
-            timestamp: new Date().toLocaleTimeString(),
-            nodes: {
-                nodeA: { status: "online" },
-                nodeB: { status: "maintenance" }
-            }
+            timestamp: new Date().toLocaleTimeString('en-AU')
         };
 
-        // DOM Elements
         const messageInput = document.getElementById('messageInput');
         const localeInput = document.getElementById('localeInput');
         const timestampInput = document.getElementById('timestampInput');
         const jsonPreviewOutput = document.getElementById('jsonPreviewOutput');
-        const nodesListContainer = document.getElementById('nodesListContainer');
         const statusMessage = document.getElementById('statusMessage');
         const statusIndicator = document.getElementById('statusIndicator');
 
-        // Modal elements
-        const nodeModal = document.getElementById('nodeModal');
-        const modalNodeKey = document.getElementById('modalNodeKey');
-        const modalNodeStatus = document.getElementById('modalNodeStatus');
-
         function init() {
-            refreshTimestamp();
             syncFormFromState();
-            renderNodesList();
             updatePreview();
 
-            // Setup input listeners
             messageInput.addEventListener('input', (e) => {
                 appState.message = e.target.value;
                 updatePreview();
@@ -261,7 +193,7 @@
         }
 
         function refreshTimestamp() {
-            appState.timestamp = new Date().toLocaleTimeString();
+            appState.timestamp = new Date().toLocaleTimeString('en-AU');
             timestampInput.value = appState.timestamp;
             updatePreview();
         }
@@ -278,87 +210,12 @@
             timestampInput.value = appState.timestamp;
         }
 
-        function renderNodesList() {
-            nodesListContainer.innerHTML = '';
-            
-            for (const [key, nodeObj] of Object.entries(appState.nodes)) {
-                const nodeItem = document.createElement('div');
-                nodeItem.className = "flex items-center justify-between bg-slate-950 border border-slate-800/80 p-3 rounded-xl";
-                
-                // Badge color mapping based on status
-                let badgeClass = 'bg-glowBlue/10 text-glowBlue border-glowBlue/30';
-                if (nodeObj.status === 'offline') badgeClass = 'bg-glowRed/10 text-glowRed border-glowRed/30';
-                if (nodeObj.status === 'maintenance') badgeClass = 'bg-glowAmber/10 text-glowAmber border-glowAmber/30';
-                if (nodeObj.status === 'online') badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-
-                nodeItem.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <span class="font-mono text-sm text-slate-200 font-semibold">${key}</span>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeClass}">
-                            ${nodeObj.status}
-                        </span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <select onchange="updateNodeStatus('${key}', this.value)" class="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-glowBlue">
-                            <option value="online" ${nodeObj.status === 'online' ? 'selected' : ''}>Online</option>
-                            <option value="offline" ${nodeObj.status === 'offline' ? 'selected' : ''}>Offline</option>
-                            <option value="maintenance" ${nodeObj.status === 'maintenance' ? 'selected' : ''}>Maintenance</option>
-                        </select>
-                        <button type="button" onclick="deleteNode('${key}')" class="p-1.5 text-slate-500 hover:text-glowRed transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                nodesListContainer.appendChild(nodeItem);
-            }
-        }
-
-        function updateNodeStatus(key, newStatus) {
-            if (appState.nodes[key]) {
-                appState.nodes[key].status = newStatus;
-                renderNodesList();
-                updatePreview();
-            }
-        }
-
-        function deleteNode(key) {
-            delete appState.nodes[key];
-            renderNodesList();
-            updatePreview();
-        }
-
-        function addNodeModalOpen() {
-            modalNodeKey.value = '';
-            modalNodeStatus.value = 'online';
-            nodeModal.classList.remove('hidden');
-        }
-
-        function closeNodeModal() {
-            nodeModal.classList.add('hidden');
-        }
-
-        function saveNodeModal() {
-            const key = modalNodeKey.value.trim();
-            const status = modalNodeStatus.value;
-            if (!key) {
-                alertBox("Please enter a valid node key identifier.");
-                return;
-            }
-            appState.nodes[key] = { status: status };
-            renderNodesList();
-            updatePreview();
-            closeNodeModal();
-        }
-
         function updatePreview() {
             jsonPreviewOutput.textContent = JSON.stringify(appState, null, 2);
         }
 
         function copyJsonToClipboard() {
             const jsonString = JSON.stringify(appState, null, 2);
-            // Use fallback compatible copy mechanism
             const textArea = document.createElement("textarea");
             textArea.value = jsonString;
             document.body.appendChild(textArea);
@@ -373,13 +230,13 @@
         }
 
         function submitData() {
-            showStatus("Transmitting IGlowData payload to backend endpoint...", "glowBlue");
+            showStatus("Transmitting IGlowData payload...", "glowBlue");
             statusIndicator.className = "inline-block w-2 h-2 rounded-full bg-glowBlue animate-ping";
             
             setTimeout(() => {
                 statusIndicator.className = "inline-block w-2 h-2 rounded-full bg-emerald-400";
-                showStatus("Payload successfully received and validated against IGlowData schema!", "emerald");
-            }, 1000);
+                showStatus("Payload successfully validated against IGlowData en-AU schema!", "emerald");
+            }, 800);
         }
 
         function showStatus(msg, type) {
@@ -392,25 +249,17 @@
                 statusIndicator.className = "inline-block w-2 h-2 rounded-full bg-glowRed";
             } else {
                 statusMessage.className = "text-xs text-glowBlue bg-glowBlue/10 border border-glowBlue/30 p-3 rounded-xl flex items-center";
+                statusIndicator.className = "inline-block w-2 h-2 rounded-full bg-glowBlue";
             }
-        }
-
-        function alertBox(msg) {
-            showStatus(msg, "glowRed");
         }
 
         function resetForm() {
             appState = {
-                message: "System operational check normal.",
+                message: "Australian regional telemetry node operational.",
                 locale: "Palm",
-                timestamp: new Date().toLocaleTimeString(),
-                nodes: {
-                    nodeA: { status: "online" },
-                    nodeB: { status: "maintenance" }
-                }
+                timestamp: new Date().toLocaleTimeString('en-AU')
             };
             syncFormFromState();
-            renderNodesList();
             updatePreview();
             showStatus("Form reset to default state.", "blue");
         }

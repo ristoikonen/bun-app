@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IGlowData Portal — Raven Health Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between py-8 px-4 sm:px-6 lg:px-8">
+
+    <!-- Top Header Bar -->
+    <header class="max-w-5xl mx-auto w-full mb-4">
+        <div class="bg-[#022e47] text-white px-6 py-4 rounded-xl shadow-md flex flex-col sm:flex-row justify-between items-center gap-4">
+           IGlowData INPUT
+        </div>
+    </header>
+
+    <!-- Main Container Grid -->
+    <main class="max-w-5xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Form Section -->
+        <section class="lg:col-span-7 bg-white border border-slate-200 rounded-xl shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+            <div>
+                <div class="border-b border-slate-100 pb-4 mb-6">
+                    <h2 class="text-base font-semibold text-[#022e47]">Payload Configuration</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Configure IGlowData parameters for transmission.</p>
+                </div>
+
+                <form id="glowForm" class="space-y-6">
+                    <!-- Message Field -->
+                    <div>
+                        <label for="message" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Message</label>
+                        <input type="text" id="message" name="message" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#006495] focus:bg-white transition"
+                            placeholder="Enter telemetry or event message..."
+                            value="Routine node synchronization verified successfully">
+                    </div>
+
+                    <!-- Locale Field with Presets -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Locale</label>
+                        <div class="grid grid-cols-4 gap-2 mb-2">
+                            <button type="button" class="locale-btn py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 hover:bg-[#006495] hover:text-white transition text-slate-700" data-val="Palm">Palm</button>
+                            <button type="button" class="locale-btn py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 hover:bg-[#006495] hover:text-white transition text-slate-700" data-val="Crace">Crace</button>
+                            <button type="button" class="locale-btn py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 hover:bg-[#006495] hover:text-white transition text-slate-700" data-val="Kaleen">Kaleen</button>
+                            <button type="button" class="locale-btn py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 hover:bg-[#006495] hover:text-white transition text-slate-700" data-val="Gira">Gira</button>
+                        </div>
+                        <input type="text" id="locale" name="locale" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#006495] focus:bg-white transition"
+                            value="Palm">
+                    </div>
+
+                    <!-- Timestamp Field -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="timestamp" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Timestamp (AU 24h)</label>
+                            <button type="button" id="syncTimeBtn" class="text-xs font-medium text-[#006495] hover:underline">Sync Current Time</button>
+                        </div>
+                        <input type="text" id="timestamp" name="timestamp" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#006495] focus:bg-white transition font-mono">
+                    </div>
+                </form>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                <button type="button" id="resetBtn" class="px-5 py-2.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">Reset</button>
+                <button type="button" id="submitBtn" class="px-6 py-2.5 rounded-lg bg-[#022e47] hover:bg-[#006495] text-white text-xs font-semibold shadow-sm transition">Submit</button>
+            </div>
+        </section>
+
+        <!-- Preview & Status Log Section -->
+        <section class="lg:col-span-5 flex flex-col space-y-6">
+            <!-- JSON Preview Card -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">Live JSON Preview</h2>
+                    <div class="flex space-x-3">
+                        <button type="button" id="copyJsonBtn" class="text-xs text-[#006495] hover:underline font-medium">Copy</button>
+                        <button type="button" id="downloadJsonBtn" class="text-xs text-[#006495] hover:underline font-medium">Download JSON</button>
+                    </div>
+                </div>
+                <div class="bg-[#0f172a] rounded-lg p-4 flex-1 font-mono text-xs text-slate-200 overflow-x-auto shadow-inner">
+                    <pre id="jsonPreview" class="whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+
+            <!-- System Logs Card -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-2">
+                
+                <div id="statusLog" class="text-xs text-slate-500 font-mono space-y-1">
+                    <p class="text-emerald-600">[DEBUG] Form initialized successfully with AU 24-hour time.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-5xl mx-auto w-full mt-8 text-center text-xs text-slate-400">
+        <p>&copy; 2026 IGlowData &bull; Built with White\Blue styling</p>
+    </footer>
+
+    <!-- Client Script -->
+    <script>
+        const messageInput = document.getElementById('message');
+        const localeInput = document.getElementById('locale');
+        const timestampInput = document.getElementById('timestamp');
+        const jsonPreview = document.getElementById('jsonPreview');
+        const statusLog = document.getElementById('statusLog');
+        const syncTimeBtn = document.getElementById('syncTimeBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const localeBtns = document.querySelectorAll('.locale-btn');
+        const copyJsonBtn = document.getElementById('copyJsonBtn');
+        const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+
+        // Helper for AU 24-hour time format (en-AU, hour12: false)
+        function getAutime() {
+            return new Date().toLocaleTimeString('en-AU', { hour12: false });
+        }
+
+        // Initialize timestamp
+        timestampInput.value = getAutime();
+
+        // Update JSON Preview
+        function updatePreview() {
+            const data = {
+                message: messageInput.value,
+                locale: localeInput.value,
+                timestamp: timestampInput.value
+            };
+            jsonPreview.textContent = JSON.stringify(data, null, 2);
+            return data;
+        }
+
+        // Event listeners for real-time update
+        [messageInput, localeInput, timestampInput].forEach(input => {
+            input.addEventListener('input', updatePreview);
+        });
+
+        // Sync button
+        syncTimeBtn.addEventListener('click', () => {
+            timestampInput.value = getAutime();
+            updatePreview();
+            logActivity('Timestamp resynced to current AU 24h time.');
+        });
+
+        // Locale preset buttons
+        localeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                localeBtns.forEach(b => b.classList.remove('bg-[#006495]', 'text-white'));
+                btn.classList.add('bg-[#006495]', 'text-white');
+                localeInput.value = btn.getAttribute('data-val');
+                updatePreview();
+            });
+        });
+
+        // Submit action
+        submitBtn.addEventListener('click', () => {
+            logActivity('Payload successfully submitted to IGlowData endpoint.');
+            submitBtn.textContent = 'Submitted!';
+            submitBtn.classList.add('bg-emerald-600');
+            setTimeout(() => {
+                submitBtn.textContent = 'Submit';
+                submitBtn.classList.remove('bg-emerald-600');
+            }, 2000);
+        });
+
+        // Reset action
+        resetBtn.addEventListener('click', () => {
+            messageInput.value = '';
+            localeInput.value = 'Palm';
+            timestampInput.value = getAutime();
+            localeBtns.forEach(b => b.classList.remove('bg-[#006495]', 'text-white'));
+            updatePreview();
+            logActivity('Form reset to default parameters.');
+        });
+
+        // Copy JSON action
+        copyJsonBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(jsonPreview.textContent);
+            copyJsonBtn.textContent = 'Copied!';
+            setTimeout(() => copyJsonBtn.textContent = 'Copy', 2000);
+        });
+
+        // Download JSON action
+        downloadJsonBtn.addEventListener('click', () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonPreview.textContent);
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "iglowdata_payload.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            logActivity('IGlowData JSON payload downloaded.');
+        });
+
+        function logActivity(text) {
+            const p = document.createElement('p');
+            p.className = 'text-slate-600';
+            p.textContent = `[${getAutime()}] ${text}`;
+            statusLog.prepend(p);
+            if (statusLog.childElementCount > 4) {
+                statusLog.removeChild(statusLog.lastChild);
+            }
+        }
+
+        // Initial render
+        updatePreview();
+    </script>
+</body>
+</html>
