@@ -39,7 +39,7 @@
         }
         .focus-ring:focus {
             outline: none;
-            ring: 2px solid #2563eb;
+            /* ring: 2px solid #2563eb; */
             border-color: #2563eb;
         }
     </style>
@@ -150,10 +150,10 @@
                 
 
                 <div id="statusLog" class="text-xs text-slate-500 font-mono space-y-1">
-                    <p class="text-emerald-600">[DEBUG] Form initialized successfully with AU 24-hour time.</p>
+                    <p id="statusMessage" class="text-emerald-600">[DEBUG] Form initialized successfully with AU 24-hour time.</p>
                 </div>
                 </div>
-                <!-- <div class="bg-white rounded-2xl border border-slate-200 p-8 card-shadow flex flex-col h-full"></div> -->
+                <div id="statusIndicator" class="bg-white rounded-2xl border border-slate-200 p-8 card-shadow flex flex-col h-full"></div>
             </div>
         </div>
     </main>
@@ -235,18 +235,55 @@
             document.body.removeChild(textArea);
         }
 
-        function submitData() {
+        /* function submitData() {
             showStatus("Validating and submitting IGlowData payload...", "info");
             statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-crayonOrange animate-ping";
+            const jsonString = JSON.stringify(appState, null, 2);
             
             setTimeout(() => {
                 statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500";
                 showStatus("Payload successfully validated and recorded in clinical audit trail!", "success");
             }, 600);
-        }
+        } */
 
+        async function submitData() {
+            showStatus("Sending IGlowData payload to Bun API...", "info");
+            
+            // Construct your payload matching IGlowData interface
+            const payload = {
+                message: messageInput.value,
+                locale: localeInput.value,
+                timestamp: timestampInput.value
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/glow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned status ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Success handling
+                showStatus("Payload successfully received and processed by Bun API!", "success");
+                console.log("Response from Bun:", result);
+
+            } catch (error) {
+                // Error handling
+                console.error("Submission failed:", error);
+                showStatus(`Submission failed: ${error.message}`, "error");
+            }
+        }
+        
         function showStatus(msg, type) {
-            statusMessage.textContent = msg;
+            statusMessage.textContent = msg || '';
             if(type === 'success') {
                 statusMessage.className = "text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl flex items-center";
                 statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500";

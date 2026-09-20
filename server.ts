@@ -16,6 +16,8 @@ import profilePage from "./pages/profile.html" with { type: "text" };
 import baseimagePage from "./pages/baseimage.html" with { type: "text" };
 import glowPage from "./pages/glow.html" with { type: "text" };
 import glowspotPage from "./pages/glowspot.html" with { type: "text" };
+import glowwhitePage from "./pages/glowwhite.html" with { type: "text" };
+import glowwhitebluePage from "./pages/glowwhiteblue.html" with { type: "text" };
 
 import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
@@ -34,6 +36,18 @@ const RECT2_PNG = "./images/rect2.png";
 const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
+export async function handleGlowUpload(req: Request, saveFile : boolean = false): Promise<Response> {
+    try {
+        return Response.json({
+            placeholder: `/upload/placeholder`,
+            thumbnail: `/upload/thumbnail`,
+        });
+    }
+    catch (error) {
+        console.error("Error handling upload:", error);
+        return new Response("Internal Server Error", { status: 500, headers: { "Content-Type": "text/html" } });
+    }
+};
 
 (async function main() {
     await mkdir(IMAGES_DIR, { recursive: true });
@@ -73,6 +87,9 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             "/uploadnew": {
                 POST: async (req) => await handleUpload(req)
             },
+            "/api/glow": {
+                POST: async (req) => await handleGlowUpload(req)
+            },
             "/submit_form": {
                 POST: () => new Response("submit_form", { headers: { "Content-Type": "text/html" } })
             },
@@ -91,14 +108,14 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                             const states = ["healthy", "warning", "critical"];
                             
                             const payload: IGlowData = {
-                            message: 'Estim round 10',
-                            locale: 'Palm',
-                            timestamp: new Date().toLocaleTimeString('en-AU'),
-                            // Randomly rotate states for visualization testing
-                            nodes: {
-                                nodeA: { status: states[Math.floor(Math.random() * states.length)] },
-                                nodeB: { status: states[Math.floor(Math.random() * states.length)] }
-                            }
+                                message: 'Estim round 10',
+                                locale: 'Palm',
+                                timestamp: new Date().toLocaleTimeString('en-AU'),
+                                // Randomly rotate states for visualization testing
+                                nodes: {
+                                    nodeA: { status: states[Math.floor(Math.random() * states.length)] },
+                                    nodeB: { status: states[Math.floor(Math.random() * states.length)] }
+                                }
                             };
 
                             controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
@@ -119,7 +136,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                     });
                 }
             },
-            
+
             "/upload": {
                 POST: async (req: BunRequest) => {
 
@@ -254,6 +271,12 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             },
             "/glowspot": {
                 GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/glowwhite": {
+                GET: () => new Response(String(glowwhitePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/glowwhitebluet": {
+                GET: () => new Response(String(glowwhitebluePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
                 // serves user data to profile -page!
