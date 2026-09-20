@@ -151,7 +151,8 @@
         //if (giralangNode) {
         //    giralangNode.setAttribute('filter', 'url(#glow-red)');
         //}
-/*
+
+        /*
         ballsy.addEventListener('load', () => {
         const svgDoc = ballsy.contentDocument;
         console.log(svgDoc);
@@ -160,29 +161,38 @@
             giralangNode.setAttribute('filter', 'url(#glow-red)');
         }
 
-  }    
-);
-*/
-svgObject.addEventListener('load', () => {
+        }    
+        );
+        */
 
-    //var shapeContent = event.target;
 
-            //const svgId = document.getElementById('balls');
-        //const svgD = document.embeds["ba"];//.getSVGDocument();
-        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Safely perform initial state setups here
+            const giralang = document.getElementById('nodeGiralang');
+            giralang.setAttribute('opacity', '1');
+            //giralang.setAttribute('filter', 'url(#glow-red)');
+        });
 
-        //console.log(svgId);
-        
-    //const svgDoc = svgId.contentDocument;
-    //console.log(svgDoc);
-    // 1. Get the SVG internal document
-    //const svgDoc = shapeContent.contentDocument;
-    //svgId.setAttribute('filter', 'url(#glow-red)');
-    // 2. Use querySelector inside the SVG
-    //const giralangNode = svgId.querySelector('#nodeGiralang');
-    //giralangNode.setAttribute('fill', '#ef4444'); //url(#glow-red)
+        svgObject.addEventListener('load', () => {
 
-});
+            //var shapeContent = event.target;
+
+                    //const svgId = document.getElementById('balls');
+                //const svgD = document.embeds["ba"];//.getSVGDocument();
+                
+
+                //console.log(svgId);
+                
+            //const svgDoc = svgId.contentDocument;
+            //console.log(svgDoc);
+            // 1. Get the SVG internal document
+            //const svgDoc = shapeContent.contentDocument;
+            //svgId.setAttribute('filter', 'url(#glow-red)');
+            // 2. Use querySelector inside the SVG
+            //const giralangNode = svgId.querySelector('#nodeGiralang');
+            //giralangNode.setAttribute('fill', '#ef4444'); //url(#glow-red)
+
+        });
 
         source.onmessage = (event) => {
             const ballsy = document.querySelector('balls');
@@ -195,7 +205,7 @@ svgObject.addEventListener('load', () => {
 
 
     console.log("Telemetry Received:", event.data);
- const edata = event.data;
+    const edata = event.data;
 
     // 2. Drive the state transformations based on your stream data
     // Assuming your stream data passes an object structure like data.nodes.nodePalmerston.status
@@ -234,7 +244,7 @@ svgObject.addEventListener('load', () => {
     giralangNode2.removeAttribute('filter');
     giralangNode2.removeAttribute('fill');
     giralangNode2.setAttribute('filter', 'url(#glow-red)');
- giralangNode2.setAttribute('fill', '#ef4444'); 
+    giralangNode2.setAttribute('fill', '#ef4444'); 
 
 
     if (oldSvg) {
