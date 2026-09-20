@@ -13,6 +13,7 @@ import testformPage from "./pages/testform.html" with { type: "text" };
 import profilePage from "./pages/profile.html" with { type: "text" };
 import baseimagePage from "./pages/baseimage.html" with { type: "text" };
 import glowPage from "./pages/glow.html" with { type: "text" };
+import glowspotPage from "./pages/glowspot.html" with { type: "text" };
 
 import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
@@ -81,13 +82,6 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
 
 
-
-
-
-
-
-
-
     "/api/stream" : {
         GET: (req) => {
       const stream = new ReadableStream({
@@ -126,15 +120,6 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
     
   },
-
-
-
-
-
-
-
-
-
 
 
 
@@ -270,6 +255,9 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
             },
             "/glow": {
                 GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/glowspot": {
+                GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
                 // serves user data to profile -page!

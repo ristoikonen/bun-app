@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Glowing Spot Map</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h2 { margin-bottom: 5px; font-weight: 500; }
+        #clock { color: #9ca3af; margin-bottom: 20px; font-size: 14px; }
+
+        /* Define the smooth transition for color changes */
+        .map-node {
+            transition: fill 0.3s ease, filter 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Status Styling with Custom Glowing CSS Filters */
+        .status-healthy {
+            fill: #10b981; /* Vivid Emerald Green */
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
+        }
+
+        .status-warning {
+            fill: #f59e0b; /* Amber Amber/Orange */
+            filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.8));
+        }
+
+        .status-critical {
+            fill: #ef4444; /* Bright Crimson Red */
+            filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.9));
+            /* Add an optional critical pulse animation */
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6)); }
+            to { filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1)); }
+        }
+        .v_plus{
+            visibility: hidden;
+        }
+        .v_minus{
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+<!-- 
+    <h2>Live Infrastructure Map</h2>
+    <div id="clock">Awaiting stream...</div>
+    <h3 class="v-minus" id="locale">not vis</h3>
+    <h3 class="v-minus" id="message">not vis</h3>
+ -->
+
+
+<h2  class="v-minus" id="message2"></h2>
+
+<svg title="ba" id="balls" width="450" height="600" style="background: #0b0f19; border: 0px solid #1f2937; border-radius: 12px;" xmlns="http://w3.org">
+  <!-- Defs for glow effects (status indicators) -->
+  <defs>
+    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Title Label -->
+  <text x="225" y="60" fill="#9ca3af" font-size="14" font-family="sans-serif" letter-spacing="2" text-anchor="middle" class="v-minus" id="message"></text>
+
+  <!-- ================= PALMERSTON NODE (Top Right - RED) ================= -->
+  <!-- Status Light Glow -->
+  <circle id="nodePalmerston" cx="290" cy="160" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <circle id="mapnodePalmerston" class="map-node" cx="290" cy="160" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="290" y="165" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Palmerston</text>
+  <text id="timePalmerston"  x="291" y="178" fill="#ffffff" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="middle" pointer-events="none"></text>
+
+  <!-- ================= CRACE NODE (Middle Right - GREEN) ================= -->
+  <!-- Status Light Glow -->
+  <circle id="nodeCrace"  cx="270" cy="280" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <circle id="mapnodeCrace" class="map-node" cx="270" cy="280" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="270" y="285" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Crace</text>
+
+  <!-- ================= GIRALANG NODE (Middle Left - GREEN) ================= -->
+  <!-- Status Light Glow -->
+  <circle id="nodeGiralang" cx="210" cy="420" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <!-- <circle id="mapnodeGiralang" class="map-node" cx="150" cy="300" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" /> -->
+  <circle id="mapnodeGiralang" class="map-node" cx="150" cy="300" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="150" y="305" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Giralang</text>
+
+  <!-- ================= KALEEN NODE (Bottom Left / Center - GREEN) ================= -->
+  <!-- Status Light Glow -->
+  <circle cx="210" cy="420" r="55" fill="#10b981" opacity="0.15" filter="url(#glow-green)" />
+  <!-- Main Node Circle -->
+  <circle id="nodeKaleen" class="map-node" cx="210" cy="420" r="50" fill="#1f2937" stroke="#10b981" stroke-width="2" />
+  <!-- Text Label -->
+  <text x="210" y="425" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle" pointer-events="none">Kaleen</text>
+</svg>
+
+    <script>
+
+        //const svgObject = document.querySelector('#balls');
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const evsource = new EventSource('/api/stream');
+        let latestData = null;
+
+        evsource.onmessage = (event) => {
+            try {
+                const edata = JSON.parse(event.data);
+                latestData = edata; 
+                
+                // UI updates, inside the callback
+                updateUI(latestData);
+                
+            } catch (error) {
+                console.error("Error parsing stream data:", error);
+            }
+        };
+
+        evsource.onerror = (error) => {
+            console.error("EventSource failed:", error);
+            evsource.close();
+        };
+    });
+
+
+    function updateUI(data) {
+        console.log("Data received from API:", data);
+
+        const giralang = document.getElementById('nodeGiralang');
+        const grace = document.getElementById('nodeCrace');
+        const palmerston = document.getElementById('nodePalmerston');
+        const palmerstontime = document.getElementById('timePalmerston');
+        
+        //giralang.setAttribute('opacity', '1');
+        //giralang.setAttribute('filter', 'url(#glow-red)');
+
+        if(data)
+        {
+            
+            const msg = data.message || '';
+            if(data.locale  === 'Crace')
+            {
+                //giralang.setAttribute('opacity', '100');
+                //giralang.setAttribute('filter', 'url(#glow-red)');
+
+                grace.setAttribute('opacity', '1');
+            }
+            if(data.locale  === 'Palm')
+            {
+                //giralang.setAttribute('opacity', '100');
+                //giralang.setAttribute('filter', 'url(#glow-red)');
+
+                palmerston.setAttribute('opacity', '1');
+                palmerstontime.textContent  = "10:11";
+            }
+            if (data.nodes) {
+                if (data.nodes.nodePalmerston) {
+                    updateNodeVisuals('mapnodePalmerston', 'nodePalmerston', data.nodes.nodePalmerston.status);
+                }
+                if (data.nodes.nodeGiralang) {
+                    updateNodeVisuals('mapnodeGiralang', 'nodeGiralang', data.nodes.nodeGiralang.status);
+                }
+                //updateNodeVisuals('nodeB', data.nodes.nodeB.status);
+                         
+            }
+        }
+    }
+
+    function updateNodeVisuals(elementId, status) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        if(element === 'locale' || element === 'message'|| element === 'message2')
+        {
+            if (status === 'v_minus') {
+                element.classList.remove('v_minus');
+                element.classList.add('v_plus');
+            }
+        }
+        // Reset status tracking classes 
+        element.classList.remove('status-healthy', 'status-warning', 'status-critical');
+        // Apply target conditional glow map layout
+        if (status === 'healthy') {
+            element.classList.add('status-healthy');
+        } else if (status === 'warning') {
+            element.classList.add('status-warning');
+        } else if (status === 'critical') {
+            element.classList.add('status-critical');
+        }
+    }
+
+
+    function updateNodeVisuals(nodeId, glowId, status) {
+    
+        const nodeEl = document.getElementById(nodeId);
+        const glowEl = document.getElementById(glowId);
+        
+        if (!nodeEl || !glowEl) return;
+
+        // Reset status tracking classes on both elements
+        nodeEl.classList.remove('status-healthy', 'status-warning', 'status-critical');
+        glowEl.classList.remove('status-healthy', 'status-warning', 'status-critical');
+
+        // Define color mappings for the attributes fallback
+        const colorMap = {
+            healthy: { fill: '#10b981', filter: 'url(#glow-green)' },
+            warning: { fill: '#f59e0b', filter: 'url(#glow-green)' }, // assuming you have or map to an ambient filter
+            critical: { fill: '#ef4444', filter: 'url(#glow-red)' }
+        };
+
+        const targetColors = colorMap[status];
+
+        if (targetColors) {
+            // Apply your pre-configured CSS classes (handles the drop shadow filter & pulse animations)
+            nodeEl.classList.add(`status-${status}`);
+            glowEl.classList.add(`status-${status}`);
+
+            // Inline attribute overwrites for old explicit SVG values
+            glowEl.setAttribute('fill', targetColors.fill);
+            glowEl.setAttribute('filter', targetColors.filter);
+            nodeEl.setAttribute('stroke', targetColors.fill);
+        }
+    }
+
+    </script>
+</body>
+</html>
