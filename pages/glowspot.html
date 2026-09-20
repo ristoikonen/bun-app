@@ -128,8 +128,6 @@
 
     <script>
 
-        //const svgObject = document.querySelector('#balls');
-
     document.addEventListener('DOMContentLoaded', () => {
 
         const evsource = new EventSource('/api/stream');
@@ -163,7 +161,6 @@
         const palmerston = document.getElementById('nodePalmerston');
         const palmerstontime = document.getElementById('timePalmerston');
         
-        //giralang.setAttribute('opacity', '1');
         //giralang.setAttribute('filter', 'url(#glow-red)');
 
         if(data)
@@ -172,14 +169,12 @@
             const msg = data.message || '';
             if(data.locale  === 'Crace')
             {
-                //giralang.setAttribute('opacity', '100');
                 //giralang.setAttribute('filter', 'url(#glow-red)');
 
                 grace.setAttribute('opacity', '1');
             }
             if(data.locale  === 'Palm')
             {
-                //giralang.setAttribute('opacity', '100');
                 //giralang.setAttribute('filter', 'url(#glow-red)');
 
                 palmerston.setAttribute('opacity', '1');

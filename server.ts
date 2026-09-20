@@ -2,9 +2,11 @@ import { GoogleGenAI } from '@google/genai';
 import { mkdir } from "node:fs/promises";
 import { Glob,  BunRequest} from "bun";
 import { Auth } from "./auth";
+
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
 
 import {getGoogleUserProfileFromCookie} from './services/cookie';
+import {IGlowData,INodeStatus,INodesCollection,IGoogleUserProfile} from './models/IGoogleUserProfile';
 import handleUpload from './handlers/upload';
 import verifyUserWithBackend, { verifyIdToken } from './handlers/verify';
 import registrationForm from "./pages/form.html" with { type: "text" };
@@ -31,6 +33,7 @@ const RECT2_PNG = "./images/rect2.png";
 
 const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
+
 
 (async function main() {
     await mkdir(IMAGES_DIR, { recursive: true });
@@ -80,50 +83,43 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
                 GET: () => new Response(String(baseimagePage), { headers: { "Content-Type": "text/html" } })
             },
 
+            "/api/stream" : {
+                GET: (req) => {
+                    const stream = new ReadableStream({
+                        start(controller) {
+                        const intervalId = setInterval(() => {
+                            const states = ["healthy", "warning", "critical"];
+                            
+                            const payload: IGlowData = {
+                            message: 'Estim round 10',
+                            locale: 'Palm',
+                            timestamp: new Date().toLocaleTimeString('en-AU'),
+                            // Randomly rotate states for visualization testing
+                            nodes: {
+                                nodeA: { status: states[Math.floor(Math.random() * states.length)] },
+                                nodeB: { status: states[Math.floor(Math.random() * states.length)] }
+                            }
+                            };
 
+                            controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
+                        }, 5000);
 
-    "/api/stream" : {
-        GET: (req) => {
-      const stream = new ReadableStream({
-        start(controller) {
-          const intervalId = setInterval(() => {
-            const states = ["healthy", "warning", "critical"];
+                        req.signal.addEventListener("abort", () => {
+                            clearInterval(intervalId);
+                        });
+                        }
+                    });
+
+                    return new Response(stream, {
+                        headers: {
+                        "Content-Type": "text/event-stream",
+                        "Cache-Control": "no-cache",
+                        "Connection": "keep-alive",
+                        },
+                    });
+                }
+            },
             
-            // Randomly rotate states for visualization testing
-            const payload = {
-              message: 'Estim round 10',
-              locale: 'Palm',
-              timestamp: new Date().toLocaleTimeString('en-AU'),
-              nodes: {
-                nodeA: { status: states[Math.floor(Math.random() * states.length)] },
-                nodeB: { status: states[Math.floor(Math.random() * states.length)] }
-              }
-            };
-
-            controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
-          }, 5000);
-
-          req.signal.addEventListener("abort", () => {
-            clearInterval(intervalId);
-          });
-        }
-      });
-
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-        },
-      });
-    }
-
-    
-  },
-
-
-
-
             "/upload": {
                 POST: async (req: BunRequest) => {
 
