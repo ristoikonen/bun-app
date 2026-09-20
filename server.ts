@@ -15,6 +15,8 @@ import testformPage from "./pages/testform.html" with { type: "text" };
 import profilePage from "./pages/profile.html" with { type: "text" };
 import baseimagePage from "./pages/baseimage.html" with { type: "text" };
 import glowPage from "./pages/glow.html" with { type: "text" };
+import glow2Page from "./pages/glow2.html" with { type: "text" };
+import glowdarkPage from "./pages/glowdark.html" with { type: "text" };
 import glowspotPage from "./pages/glowspot.html" with { type: "text" };
 import glowwhitePage from "./pages/glowwhite.html" with { type: "text" };
 import glowwhitebluePage from "./pages/glowwhiteblue.html" with { type: "text" };
@@ -269,6 +271,9 @@ export async function handleGlowUpload(req: Request, saveFile : boolean = false)
             "/glow": {
                 GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
+            "/glow2": {
+                GET: () => new Response(String(glow2Page), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
             "/glowspot": {
                 GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
@@ -277,6 +282,9 @@ export async function handleGlowUpload(req: Request, saveFile : boolean = false)
             },
             "/glowwhitebluet": {
                 GET: () => new Response(String(glowwhitebluePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            },
+            "/glowdark": {
+                GET: () => new Response(String(glowdarkPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
                 // serves user data to profile -page!
