@@ -17,6 +17,8 @@ import { userSchema } from '../handlers/sqllite'
 
 
 //NOTE: Ment to run by itself
+//NOTE: TESTER CODE, CAN BE REMOVED - TEST Turso
+
 // bun run services\test_db_ops.ts
 //TODO: Add more db ops and method calls at the end of code
 
@@ -70,7 +72,7 @@ async function runTestInsert() {
   const validationResult = userSchema.safeParse(candidateUser);
 
   if (!validationResult.success) {
-    console.error("❌ Zod Validation Failed:");
+    console.error("Zod Validation Failed:");
     console.error(validationResult.error.format());
     return;
   }
@@ -95,9 +97,9 @@ try {
       ],
     });
 
-    console.log("✅ Successfully inserted row with ID:", validUser.id);
+    console.log("Successfully inserted row with ID:", validUser.id);
   } catch (error) {
-    console.error("❌ Bun SQLite database error during insert:", error);
+    console.error("Bun SQLite database error during insert:", error);
   }
 }
 
@@ -198,9 +200,9 @@ export default async function testUserInsert(emailaddress: string) {
       ],
     });
 
-    console.log("✅ Successfully inserted row with ID:", validUser.id);
+    console.log("Successfully inserted row with ID:", validUser.id);
   } catch (error) {
-    console.error("❌ Turso database error during insert:", error);
+    console.error("Turso database error during insert:", error);
   }
 }
 

@@ -362,7 +362,7 @@ eventSource.onmessage = (event) => {
             console.log(filesize);
             
             try {
-                //TODO Fix localhost:3000 at least the port!
+                //TODO Fix localhost:3000 to dynamic
                 const response = await fetch('http://localhost:3000/upload', {
                     method: 'POST',
                     body: formData

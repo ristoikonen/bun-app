@@ -54,7 +54,7 @@ export async function createUser(db: any, rawInput: unknown) {
   // 2. Hash the password using Bun's native utility
   const password_hash = await Bun.password.hash(data.password, {
     algorithm: "argon2id",
-    cost: 4, // default or custom parameters
+    //cost: 4, // default or custom parameters
   });
 
   const newUser = {
@@ -121,7 +121,7 @@ export interface User {
 export async function createUserOld
   (email: string, passwordPlain: string, displayName: string | null, isModerator: number | null): Promise<void> {
   
-  //TODO: VALIDATE!
+  //VALIDATE?
   // SHA-256 hex string is 64 characters long
   const idHash = calculateUserId(email); 
   //new Bun.CryptoHasher("sha256")

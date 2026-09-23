@@ -205,7 +205,7 @@ async function DEBUG_runStressTest() {
 
         await DEBUG_sendRawRequest(rawRequest);
         
-        //TODO: add a small delay between requests if needed
+        
     }
 }
 

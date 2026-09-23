@@ -287,9 +287,7 @@ export async function handleGlowUpload(req: Request, saveFile : boolean = false)
                 GET: () => new Response(String(glowdarkPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
-                // serves user data to profile -page!
-                // TODO: Bake session_token data into UserProfile!
-                
+                // Serves user data to profile -page
                 GET: (req) => 
                 {
                     try {

@@ -5,6 +5,7 @@
 import { Database } from "bun:sqlite";
 import { createClient } from "@libsql/client";
 
+//NOTE: TESTER CODE, CAN BE REMOVED - TEST Zod and Bun sqllite functions
 // Access Bun globals without requiring Bun's ambient TypeScript definitions.
 const bun = (globalThis as any).Bun;
 
@@ -15,7 +16,7 @@ import { userSchema } from '../handlers/sqllite'
 
 //NOTE: Ment to run by itself
 // bun run services\test_db_ops.ts
-//TODO: Add more db ops and method calls at the end of code
+
 
 /*
 // Initialize Bun's native SQLite database (creates local.db if it doesn't exist)
@@ -67,7 +68,7 @@ async function runTestInsert() {
   const validationResult = userSchema.safeParse(candidateUser);
 
   if (!validationResult.success) {
-    console.error("❌ Zod Validation Failed:");
+    console.error("Zod Validation Failed:");
     console.error(validationResult.error.format());
     return;
   }
@@ -91,20 +92,14 @@ async function runTestInsert() {
       validUser.updated_at!
     );
 
-    console.log("✅ Successfully inserted row with ID:", validUser.id);
+    console.log("Successfully inserted row with ID:", validUser.id);
   } catch (error) {
-    console.error("❌ Bun SQLite database error during insert:", error);
+    console.error("Bun SQLite database error during insert:", error);
   }
 }
 
 // ADD TESTS HERE
 await runTestInsert();
-
-
-
-
-
-
 
 
 

@@ -35,17 +35,3 @@ export default async function testHashAndVerifyUserWithBackend(hashMe: string): 
         return "";
     }
 }
-
-// TODO: might be better to just not use this..
- // Set the default User-Agent if it wasn't explicitly overridden
-export async function apiFetch( options: RequestInit = {}) : Promise<Headers>  {
-  const headers = new Headers(options.headers);
-  
- 
-  if (!headers.has("User-Agent")) {
-    headers.set("User-Agent", Bun.env.APP_USER_AGENT || "");
-  }
-
-  return headers;
-  //return fetch(url, { ...options, headers });
-}
