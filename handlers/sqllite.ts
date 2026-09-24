@@ -58,22 +58,25 @@ export async function createUser(db: any, rawInput: unknown) {
  
   */
 
-  const validationResult = createUserSchema.safeParse(rawInput);
+    const validationResult = createUserSchema.safeParse(rawInput);
   
   if (!validationResult.success) {
+    
+    //TODO: Flatten and format errors to presentable, do not bubble up raw! (4 Safety).
     throw new Error(`Validation failed: ${validationResult.error.issues.map(issue => issue.message).join(", ")}`);
   }
 
   const data = validationResult.data;
 
-  // 2. Hash the password using Bun's native utility
+  // Hash the password
+  //TODO: Test pwd workflow!!
   const password_hash = await Bun.password.hash(data.password, {
     algorithm: "argon2id",
-    cost: 4, // default or custom parameters
+    //cost: 4, // default or custom parameters
   });
 
   const newUser = {
-    id: crypto.randomUUID(), // Generate unique string ID
+    id: crypto.randomUUID(), 
     email: data.email,
     password_hash,
     display_name: data.display_name ?? null,
@@ -82,7 +85,7 @@ export async function createUser(db: any, rawInput: unknown) {
     updated_at: new Date().toISOString(),
   };
 
-  // 3. Final runtime check against the complete user schema structure
+  //TODO: this parses error go to ex handler. note that throw:ing it is sort of expensive here.
   const validatedUser = userSchema.parse(newUser);
 
   // 4. Insert into Turso / SQLite
@@ -136,7 +139,7 @@ export interface User {
 export async function createUserOld
   (email: string, passwordPlain: string, displayName: string | null, isModerator: number | null): Promise<void> {
   
-  //TODO: VALIDATE!
+  //Test - no validatation
   // SHA-256 hex string is 64 characters long
   const idHash = calculateUserId(email); 
   //new Bun.CryptoHasher("sha256")

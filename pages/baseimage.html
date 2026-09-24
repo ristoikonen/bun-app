@@ -296,44 +296,45 @@
     </div>
 
     <script>
+
+        //const clid = "__GOOGLE_CLIENT_ID__";
+        const PORT = Number(process.env.APP_PORT) || 3000;
+        const HOST = Number(process.env.APP_HOST) || 'localhost';
+
         const form = document.getElementById('uploadForm');
         const resultDiv = document.getElementById('result');
 
 
 
+    const eventSource = new EventSource('/api/stream');
 
+    eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data); 
+        // Example incoming data layout: 
+        // { nodeA: { status: "healthy" }, nodeB: { status: "critical" } }
 
-const eventSource = new EventSource('/api/stream');
+        // --- Update Node A Visuals ---
+        const elementA = document.getElementById('nodeA');
+        if (data.nodeA.status === "healthy") {
+            elementA.setAttribute('fill', '#22c55e'); // Green
+            elementA.setAttribute('r', '50');         // Standard size
+        } else {
+            elementA.setAttribute('fill', '#ef4444'); // Red
+        }
 
-eventSource.onmessage = (event) => {
-    const data = JSON.parse(event.data); 
-    // Example incoming data layout: 
-    // { nodeA: { status: "healthy" }, nodeB: { status: "critical" } }
+        // --- Update Node B Visuals ---
+        const elementB = document.getElementById('nodeB');
+        if (data.nodeB.status === "critical") {
+            elementB.setAttribute('fill', '#ef4444'); // Red
+            // You could even make it pulse or add an animation class
+            elementB.style.opacity = (Math.sin(Date.now() / 200) + 1) / 2; 
+        } else {
+            elementB.setAttribute('fill', '#3b82f6'); // Blue / Normal
+            elementB.style.opacity = 1;
+        }
 
-    // --- Update Node A Visuals ---
-    const elementA = document.getElementById('nodeA');
-    if (data.nodeA.status === "healthy") {
-        elementA.setAttribute('fill', '#22c55e'); // Green
-        elementA.setAttribute('r', '50');         // Standard size
-    } else {
-        elementA.setAttribute('fill', '#ef4444'); // Red
-    }
-
-    // --- Update Node B Visuals ---
-    const elementB = document.getElementById('nodeB');
-    if (data.nodeB.status === "critical") {
-        elementB.setAttribute('fill', '#ef4444'); // Red
-        // You could even make it pulse or add an animation class
-        elementB.style.opacity = (Math.sin(Date.now() / 200) + 1) / 2; 
-    } else {
-        elementB.setAttribute('fill', '#3b82f6'); // Blue / Normal
-        elementB.style.opacity = 1;
-    }
-
-    document.getElementById('debug').innerText = `Last updated: ${new Date().toLocaleTimeString()}`;
-};
-
-
+        document.getElementById('debug').innerText = `Last updated: ${new Date().toLocaleTimeString()}`;
+    };
 
 
 
@@ -362,8 +363,10 @@ eventSource.onmessage = (event) => {
             console.log(filesize);
             
             try {
-                //TODO Fix localhost:3000 to dynamic
-                const response = await fetch('http://localhost:3000/upload', {
+                //TODO Fix HTTP vs HTTPS!!!
+                const uri = 'http://' + HOST + ':' + PORT + '/upload'
+                //'http://localhost:3000/upload'
+                const response = await fetch(uri, {
                     method: 'POST',
                     body: formData
                 });

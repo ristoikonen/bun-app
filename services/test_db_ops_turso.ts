@@ -16,11 +16,10 @@ const db = createClient({
 import { userSchema } from '../handlers/sqllite'
 
 
-//NOTE: Ment to run by itself
-//NOTE: TESTER CODE, CAN BE REMOVED - TEST Turso
-
+//NOTE: Turso sqllite tester.  Runs by itself
 // bun run services\test_db_ops.ts
-//TODO: Add more db ops and method calls at the end of code
+
+
 
 /*
 // Initialize Bun's native SQLite database (creates local.db if it doesn't exist)
