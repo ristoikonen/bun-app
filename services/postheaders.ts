@@ -10,16 +10,19 @@ const REQUEST_INTERVAL_MS = Math.floor(1000 / REQUESTS_PER_SECOND);
 // Helper function to handle delays
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// TODO: POST version! Add separate ts file.
-const baseRequestLine: string = "GET / HTTP/1.1";
+// CHANGED: Configured for POST method
+const baseRequestLine: string = "POST / HTTP/1.1";
+
+// NEW: Define standard body payload for POST fuzzing
+const bodyPayload = JSON.stringify({ test: "data", active: true });
+const bodyPayloadLength = Buffer.byteLength(bodyPayload).toString();
 
 // Define types for the header structure
 type HeaderMap = Record<string, string>;
 type HeaderPools = Record<string, string[]>;
 
 // Base Headers Configuration
-// IP's is in TEST-NET-3 block - Routers do not forward  addresses on the live public internet
-//NOTE: think editing/adding string const's
+// IP's is in TEST-NET-3 block - Routers do not forward addresses on the live public internet
 const baseHeaders: HeaderMap = {
     // Host & Forwarding / Proxy headers
     "Host": `${TARGET_HOST}:${TARGET_PORT}`,
@@ -40,11 +43,14 @@ const baseHeaders: HeaderMap = {
     "Referer": "https://trusted-origin.com",
 
     // Protocol Routing / Overrides & Slicing
-    "X-HTTP-Method-Override": "GET",
+    // CHANGED: Set to POST to align with base request
+    "X-HTTP-Method-Override": "POST",
     "Range": "bytes=0-1023",
 
     // Request Sizing / Body Routing
-    "Content-Length": "0",
+    // CHANGED: Added proper Content-Type for POST data payloads
+    "Content-Type": "application/json",
+    "Content-Length": bodyPayloadLength,
     "Transfer-Encoding": "chunked",
     
     // Standard utility
@@ -55,7 +61,8 @@ const baseHeaders: HeaderMap = {
 // Pools for Variations / Combos (Fuzzing / Edge-case stress testing)
 const headerPools: HeaderPools = {
     "Transfer-Encoding": ["chunked", ""],
-    "Content-Length": ["0", "10", ""],
+    // CHANGED: Included the real body payload length along with mismatch variations
+    "Content-Length": [bodyPayloadLength, "0", "10", ""],
     "Origin": ["https://trusted-origin.com", "https://evil-origin.com", "null", ""],
     "Access-Control-Allow-Origin": ["*", "https://trusted-origin.com", "null"],
     "X-Forwarded-For": ["203.0.113.195", "127.0.0.1", "10.0.0.1, 192.168.1.1"],
@@ -70,7 +77,7 @@ const totalIterations: number = Object.values(headerPools).reduce(
     1
 );
 
-// Typed Generator Function for Cartesian Product Combinations = All possibe combos
+// Typed Generator Function for Cartesian Product Combinations = All possible combos
 function* generateHeaderCombos(pools: HeaderPools): Generator<HeaderMap, void, unknown> {
     const keys: string[] = Object.keys(pools);
     const values: string[][] = Object.values(pools);
@@ -88,30 +95,6 @@ function* generateHeaderCombos(pools: HeaderPools): Generator<HeaderMap, void, u
     yield* cartesian(0, {});
 }
 
-/*
-for (const comboHeaders of generateHeaderCombos(headerPools)) {
-    // Merge base headers with current variation combo
-    const mergedHeaders: HeaderMap = { ...baseHeaders, ...comboHeaders };
-
-    const headerLines: string[] = Object.entries(mergedHeaders)
-        .filter(([_, value]) => value !== "") // Omit empty strings
-        .map(([key, value]) => `${key}: ${value}`);
-
-    const rawRequest: string = [
-        baseRequestLine,
-        ...headerLines,
-        "", 
-        "" 
-    ].join("\r\n");
-
-    if(LOG_HEADERS)
-    {
-        console.log(rawRequest);
-    }
-
-    break; 
-}
-*/
 
 // Function to send a single rawRequest over TCP
 async function sendRawRequest(rawRequest: string) {
@@ -137,15 +120,6 @@ async function sendRawRequest(rawRequest: string) {
     }
 }
 
-// Function to log a single rawRequest
-async function DEBUG_sendRawRequest(rawRequest: string) {
-    try {
-        console.log(rawRequest);
-    } catch (err) {
-        console.error("Log rawRequest failed:", err);
-    }
-}
-
 
 // Main Loop: Iterate through generator and fire requests
 async function runStressTest() {
@@ -162,28 +136,25 @@ async function runStressTest() {
             .filter(([_, value]) => value !== "")
             .map(([key, value]) => `${key}: ${value}`);
 
-        // Build the raw request string from the generator combo
+        // CHANGED: Appended payload string after the header block line endings
         const rawRequest: string = [
             baseRequestLine,
             ...headerLines,
             "", 
-            "" 
+            bodyPayload 
         ].join("\r\n");
 
         count++;
         console.log(`Sending request [${count}/${totalIterations}]...`);
-
-        //console.log("Sending combination...");
 
         await sendRawRequest(rawRequest);
 
         if(LOG_HEADERS)
         {
             console.log(rawRequest);
+            console.log("\n--------------------------------------------------");
         }
 
-
-        //TODO: add a small delay between requests if needed
         // Apply module-level interval calculator delay
         if (REQUEST_INTERVAL_MS > 0) {
             await sleep(REQUEST_INTERVAL_MS);
@@ -191,43 +162,4 @@ async function runStressTest() {
     }
 }
 
-// Main Loop: Iterate through generator and fire requests
-async function DEBUG_runStressTest() {
-
-    console.log(`[Config] Total unique header combinations to test: ${totalIterations}`);
-    console.log(`[Config] Target rate: ~${REQUESTS_PER_SECOND} req/sec (${REQUEST_INTERVAL_MS}ms delay)...`);
-    console.log("--------------------------------------------------");
-
-    let count = 0;
-
-    for (const comboHeaders of generateHeaderCombos(headerPools)) {
-        const mergedHeaders: HeaderMap = { ...baseHeaders, ...comboHeaders };
-
-        const headerLines: string[] = Object.entries(mergedHeaders)
-            .filter(([_, value]) => value !== "")
-            .map(([key, value]) => `${key}: ${value}`);
-
-        // Build the raw request string from the generator combo
-        const rawRequest: string = [
-            baseRequestLine,
-            ...headerLines,
-            "", 
-            "" 
-        ].join("\r\n");
-
-        
-        count++;
-        console.log(`Sending request [${count}/${totalIterations}]...`);
-        if(LOG_HEADERS)
-        {
-            console.log(rawRequest);
-        }
-
-        await DEBUG_sendRawRequest(rawRequest);
-        
-        
-    }
-}
-
-// runStressTest();
-DEBUG_runStressTest();
+runStressTest();
