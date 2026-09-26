@@ -9,16 +9,16 @@ const REQUESTS_PER_SECOND = 50;
 const REQUEST_INTERVAL_MS = Math.floor(1000 / REQUESTS_PER_SECOND);
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const baseRequestLine: string = "POST / HTTP/1.1";
+const baseRequestLine: string = "GET / HTTP/1.1";
 
 //NOTE 203.0.113.195 is from test reserverd IP range - will not go though routers
 
-// Comprehensive body payload variants for testing common backend parsers
+// Payload variations pool for fuzzing unexpected bodies on GET requests
 const bodyPool: string[] = [
-    JSON.stringify({ test: "data", active: true }), // Valid standard JSON format
-    '{"malformed_json": ',                          // Mismatched structural payload syntax
-    "A".repeat(5000),                               // Large structural payload stressor
-    ""                                              // Completely empty POST content payload
+    "",                                             // Standard Empty Body
+    JSON.stringify({ test: "data", active: true }), // Unexpected JSON Body
+    '{"malformed_json": ',                          // Broken structural syntax
+    "A".repeat(5000)                                // Large payload buffer stressor
 ];
 
 type HeaderMap = Record<string, string>;
@@ -37,10 +37,10 @@ const baseHeaders: HeaderMap = {
     "Origin": "https://trusted-origin.com",
     "Access-Control-Allow-Origin": "*",
     "Referer": "https://trusted-origin.com",
-    "X-HTTP-Method-Override": "POST",
+    "X-HTTP-Method-Override": "GET",
     "Range": "bytes=0-1023",
     "Content-Type": "application/json",
-    "Content-Length": "0", // Handled inside the main loop iteration engine
+    "Content-Length": "0",
     "Transfer-Encoding": "chunked",
     "Accept": "*/*",
     "Connection": "keep-alive"
@@ -48,13 +48,14 @@ const baseHeaders: HeaderMap = {
 
 const headerPools: HeaderPools = {
     "Transfer-Encoding": ["chunked", ""],
-    "Content-Length": ["0", "10", ""], // These manual mismatch states will trigger in turns
+    "Content-Length": ["0", "10", ""], // Hardcoded variations will take priority if matched
     "Origin": ["https://trusted-origin.com", "https://evil-origin.com", "null", ""],
     "Access-Control-Allow-Origin": ["*", "https://trusted-origin.com", "null"],
     "X-Forwarded-For": ["203.0.113.195", "127.0.0.1", "10.0.0.1, 192.168.1.1"],
     "X-Real-IP": ["203.0.113.195", "127.0.0.1"]
 };
 
+// Calculate total combinations accounting for both headers and payload bodies
 const totalIterations: number = Object.values(headerPools).reduce(
     (accumulator, pool) => accumulator * pool.length,
     1
@@ -103,9 +104,15 @@ async function runStressTest() {
         for (const currentBody of bodyPool) {
             const mergedHeaders: HeaderMap = { ...baseHeaders, ...comboHeaders };
 
-            // Dynamic assessment: calculates proper length unless overridden by fuzz rules
+            // Dynamically evaluate length if header variation loop did not explicitly inject a forced fuzz length
             if (!comboHeaders.hasOwnProperty("Content-Length")) {
                 mergedHeaders["Content-Length"] = Buffer.byteLength(currentBody).toString();
+            }
+
+            // Remove content properties completely if there's no body and no fuzz rule override
+            if (currentBody === "" && !comboHeaders.hasOwnProperty("Content-Length")) {
+                delete mergedHeaders["Content-Length"];
+                delete mergedHeaders["Content-Type"];
             }
 
             const headerLines: string[] = Object.entries(mergedHeaders)
