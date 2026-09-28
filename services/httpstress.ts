@@ -88,4 +88,4 @@ async function runStressTest() {
   console.log(`Avg Throughput: ${(completedRequests / parseFloat(duration)).toFixed(2)} req/sec`);
 }
 
-runStressTest();
+//runStressTest();
