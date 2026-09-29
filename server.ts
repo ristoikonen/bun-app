@@ -38,7 +38,55 @@ const RECT2_PNG = "./images/rect2.png";
 const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
-export async function handleGlowUpload(req: Request, saveFile : boolean = false): Promise<Response> {
+export async function handleGlowUpload(req: Request, saveFile: boolean = false): Promise<Response> {
+    try {
+        let body: any = {};
+        try {
+            body = await req.json();
+        } catch (e) {
+            // Fallback if request body is empty or not JSON
+            body = {};
+        }
+
+        console.log("Received glow upload payload:", body);
+        console.log("saveFile flag:", saveFile);
+
+        //TODO: remove in PROD -  If saveFile is true, save it to disk using Bun.write for debug
+        if (saveFile && body.locale) {
+            await Bun.write(`./data/${body.locale}.json`, JSON.stringify(body, null, 2));
+        }
+
+        //NOTE: CORS headers enabled
+        return Response.json({
+            success: true,
+            received: body,
+            saveFileApplied: saveFile,
+            placeholder: `/upload/placeholder`,
+            thumbnail: `/upload/thumbnail`,
+        }, {
+            status: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Content-Type": "application/json"
+            }
+        });
+    }
+    catch (error) {
+        console.error("Error handling upload:", error);
+        return new Response("Internal Server Error", { 
+            status: 500, 
+            headers: { 
+                "Access-Control-Allow-Origin": "*",
+                "Content-Type": "text/html" 
+            } 
+        });
+    }
+};
+
+
+export async function handleGlowUploadOld(req: Request, saveFile : boolean = false): Promise<Response> {
     try {
         console.log(req);
         return Response.json({
