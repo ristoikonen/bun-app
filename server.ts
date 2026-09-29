@@ -40,6 +40,7 @@ const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 
 export async function handleGlowUpload(req: Request, saveFile : boolean = false): Promise<Response> {
     try {
+        console.log(req);
         return Response.json({
             placeholder: `/upload/placeholder`,
             thumbnail: `/upload/thumbnail`,
