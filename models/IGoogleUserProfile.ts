@@ -30,5 +30,7 @@ export interface IGlowData {
   message: string;        
   locale: string;         // e.g., 'Palm','Crace','Kaleen','Gira'
   timestamp: string;      // Formatted via toLocaleTimeString()
+  user_email:string;
   nodes: INodesCollection;
 }
+

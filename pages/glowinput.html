@@ -160,9 +160,10 @@
     <script>
         // Initialize state conforming to IGlowData interface with en-AU time format
         let appState = {
-            message: "Australian regional telemetry node operational.",
-            locale: "Palm",
-            timestamp: new Date().toLocaleTimeString('en-AU')
+            message: "System operating normally across regional grid.",
+            locale: "Palmer",
+            timestamp: new Date().toLocaleTimeString('en-AU', { hour12: false }),
+            user_email: "risto@gmax.com" 
         };
 
         const messageInput = document.getElementById('messageInput');
@@ -254,10 +255,11 @@
         }
 
         function resetForm() {
-            appState = {
-                message: "Australian regional telemetry node operational.",
-                locale: "Palm",
-                timestamp: new Date().toLocaleTimeString('en-AU')
+            let appState = {
+                message: "System operating normally across regional grid.",
+                locale: "Palmer",
+                timestamp: new Date().toLocaleTimeString('en-AU', { hour12: false }),
+                user_email: "risto@gmax.com" 
             };
             syncFormFromState();
             updatePreview();

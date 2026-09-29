@@ -1,0 +1,90 @@
+<!-- Draggable Floater Component -->
+<div id="app-floater" style="position: fixed; top: 20px; right: 20px; background: #1a1e26; border: 1px solid #2f3644; padding: 8px 14px 8px 8px; border-radius: 35px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000; font-family: system-ui, sans-serif; user-select: none;">
+    
+    <!-- Drag Handle -->
+    <div id="floater-handle" title="Drag to move" style="cursor: grab; display: flex; align-items: center; padding: 0 6px; font-size: 16px; letter-spacing: -2px; transition: color 0.2s;">⠿</div>
+
+    <!-- Navigation Links -->
+    <div style="display: flex; gap: 8px; align-items: center;" id="floater-nav">
+        <a href="/glow" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">Glow 1</a>
+        <a href="/glow2" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 14px; border-radius: 20px;">Glow 2</a>
+        <a href="/glowdark" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">Dark</a>
+        <a href="/glowwhite" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">White</a>
+        <a href="/profile" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">Profile</a>
+    </div>
+</div>
+
+<script>
+(function() {
+    // 1. Auto-highlight current page based on URL path
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.floater-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.style.color = '#fff';
+            link.style.background = '#f78522';
+            link.style.fontWeight = '600';
+        }
+    });
+
+    // 2. Intelligent Handle Contrast (Detects if page background is dark or light)
+    const handleEl = document.getElementById('floater-handle');
+    const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+    
+    // Helper to parse rgb/rgba values and check luminance
+    function isDarkBackground(colorStr) {
+        let match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (!match) return true; // Default to dark contrast if unparsable
+        let r = parseInt(match[1]), g = parseInt(match[2]), b = parseInt(match[3]);
+        // Standard relative luminance formula
+        let uicolors = [r / 255, g / 255, b / 255].map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+        let luminance = 0.2126 * uicolors[0] + 0.7152 * uicolors[1] + 0.0722 * uicolors[2];
+        return luminance < 0.5; // True if dark background
+    }
+
+    if (isDarkBackground(bodyBg)) {
+        handleEl.style.color = '#8a93a0'; // Light gray handle for dark themes (glowdark)
+    } else {
+        handleEl.style.color = '#4b5563'; // Darker gray handle for light themes (glowwhite)
+    }
+
+    // 3. Scoped drag-and-drop logic for the floater
+    const floaterEl = document.getElementById('app-floater');
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    handleEl.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        handleEl.style.cursor = 'grabbing';
+        
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = floaterEl.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        floaterEl.style.right = 'auto';
+        floaterEl.style.left = `${initialLeft}px`;
+        floaterEl.style.top = `${initialTop}px`;
+
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        floaterEl.style.left = `${initialLeft + dx}px`;
+        floaterEl.style.top = `${initialTop + dy}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            handleEl.style.cursor = 'grab';
+        }
+    });
+})();
+</script>

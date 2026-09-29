@@ -1,0 +1,71 @@
+<!-- Draggable Floater Component -->
+<div id="app-floater" style="position: fixed; top: 20px; right: 20px; background: #1a1e26; border: 1px solid #2f3644; padding: 6px 12px 6px 6px; border-radius: 30px; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000; font-family: system-ui, sans-serif; user-select: none;">
+    
+    <!-- Drag Handle -->
+    <div id="floater-handle" title="Drag to move" style="cursor: grab; display: flex; align-items: center; padding: 0 4px; color: #555d6b; font-size: 14px; letter-spacing: -2px;">⠿</div>
+
+    <!-- Navigation Links -->
+    <div style="display: flex; gap: 6px; align-items: center;" id="floater-nav">
+        <a href="/glow" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Glow 1</a>
+        <a href="/glow2" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Glow 2</a>
+        <a href="/glowdark" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Dark</a>
+        <a href="/glowwhite" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">White</a>
+        <a href="/profile" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Profile</a>
+    </div>
+</div>
+
+<script>
+(function() {
+    // 1. Auto-highlight current page based on URL path
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.floater-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.style.color = '#fff';
+            link.style.background = '#f78522';
+            link.style.fontWeight = '600';
+        }
+    });
+
+    // 2. Scoped drag-and-drop logic for the floater
+    const floaterEl = document.getElementById('app-floater');
+    const handleEl = document.getElementById('floater-handle');
+
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    handleEl.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        handleEl.style.cursor = 'grabbing';
+        
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = floaterEl.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        floaterEl.style.right = 'auto';
+        floaterEl.style.left = `${initialLeft}px`;
+        floaterEl.style.top = `${initialTop}px`;
+
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        floaterEl.style.left = `${initialLeft + dx}px`;
+        floaterEl.style.top = `${initialTop + dy}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            handleEl.style.cursor = 'grab';
+        }
+    });
+})();
+</script>

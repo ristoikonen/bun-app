@@ -2,14 +2,15 @@ import { GoogleGenAI } from '@google/genai';
 import { mkdir } from "node:fs/promises";
 import { Glob,  BunRequest} from "bun";
 import { Auth } from "./auth";
+import { OAuth2Client } from 'google-auth-library';
 
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
 
 import {getGoogleUserProfileFromCookie} from './services/cookie';
 import {IGlowData,INodeStatus,INodesCollection,IGoogleUserProfile} from './models/IGoogleUserProfile';
+import handleGlowPost from "./handlers/glowdata";
 import handleUpload from './handlers/upload';
 import verifyUserWithBackend, { verifyIdToken } from './handlers/verify';
-import registrationForm from "./pages/form.html" with { type: "text" };
 import newclientForm from "./pages/newclient.html" with { type: "text" };
 import testformPage from "./pages/testform.html" with { type: "text" };
 import profilePage from "./pages/profile.html" with { type: "text" };
@@ -20,10 +21,9 @@ import glowdarkPage from "./pages/glowdark.html" with { type: "text" };
 import glowspotPage from "./pages/glowspot.html" with { type: "text" };
 import glowwhitePage from "./pages/glowwhite.html" with { type: "text" };
 import glowwhitebluePage from "./pages/glowwhiteblue.html" with { type: "text" };
-
 import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
-import { OAuth2Client } from 'google-auth-library';
+
 
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
@@ -39,6 +39,20 @@ const RECT2_PNG = "./images/rect2.png";
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 const apiBaseUrl = process.env.services__apiservice__http__1;
 
+
+//const floathtml = await Bun.file("./uiservices/floater.html").text();
+//floathtml = floathtml.replaceAll("__FLOATER__", floaterHtml);
+//const floaterFile = Bun.file("./uiservices/floater.html");
+
+const floaterFile = await Bun.file("./uiservices/floater.html");
+const floaterHtml = (await floaterFile.exists()) ? await floaterFile.text() : "";
+console.log(floaterHtml);
+const glowPageString = String(glowPage ?? '').replaceAll("__FLOATER__", floaterHtml);
+const glow2PageString = String(glow2Page ?? '').replaceAll("__FLOATER__", floaterHtml);
+const glowdarkPageString = String(glowdarkPage).replaceAll("__FLOATER__", floaterHtml);
+
+
+//glowPage = glowPage.replaceAll("__FLOATER__", floaterHtml);
 
 export async function handleGlowUpload(req: Request, saveFile: boolean = false): Promise<Response> {
     if (req.method === "OPTIONS") {
@@ -138,7 +152,9 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                 POST: async (req) => await handleUpload(req)
             },
             "/api/glow": {
-                POST: async (req) => await handleGlowUpload(req)
+                //TODO: use handleGlowUpload file save feature before db? Perhaps a choice/optionally data goes to to db/file?
+                POST: async (req) => await handleGlowPost(req)
+                // POST: async (req) => await handleGlowUpload(req)
             },
             "/submit_form": {
                 POST: () => new Response("submit_form", { headers: { "Content-Type": "text/html" } })
@@ -161,6 +177,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                                 message: 'Estim round 10',
                                 locale: 'Palm',
                                 timestamp: new Date().toLocaleTimeString('en-AU'),
+                                user_email: '',
                                 // Randomly rotate states for visualization testing
                                 nodes: {
                                     nodeA: { status: states[Math.floor(Math.random() * states.length)] },
@@ -314,14 +331,22 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
             "/newclient": {
                 GET: () => new Response(String(newclientForm), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
-            "/profilepage": {
+
+            //"/profilepage": {
+            //    GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+            //},
+
+            "/profile": {
                 GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glow": {
-                GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                
+                GET: () => new Response(glowPageString ?? '', { headers: { "Content-Type": "text/html" } }) 
+                //GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glow2": {
-                GET: () => new Response(String(glow2Page), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(glow2PageString ?? '', { headers: { "Content-Type": "text/html" } }) 
+                // GET: () => new Response(String(glow2Page), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowspot": {
                 GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
@@ -333,7 +358,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                 GET: () => new Response(String(glowwhitebluePage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowdark": {
-                GET: () => new Response(String(glowdarkPage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(glowdarkPageString, { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
                 // Serves user data to profile -page
