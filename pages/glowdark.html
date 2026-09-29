@@ -121,6 +121,7 @@
                         </div>
                         <input type="text" id="timestampInput" placeholder="HH:MM:SS" 
                             class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 font-mono text-sm focus:outline-none focus:border-crayonOrange focus:ring-1 focus:ring-crayonOrange transition">
+                        <input type="hidden" id="userEmailInput" value="risto@gmxi.com">
                     </div>
 
                     <!-- Actions -->
@@ -184,6 +185,7 @@
         const messageInput = document.getElementById('messageInput');
         const localeInput = document.getElementById('localeInput');
         const timestampInput = document.getElementById('timestampInput');
+        const userEmailInput = document.getElementById('userEmailInput');
         const jsonPreviewOutput = document.getElementById('jsonPreviewOutput');
         const statusMessage = document.getElementById('statusMessage');
         const statusIndicator = document.getElementById('statusIndicator');
@@ -208,6 +210,17 @@
             });
         }
 
+        // Get or create a persistent anonymous ID for this browser
+        function getAnonymousId() {
+            let anonId = localStorage.getItem('glow_anon_id');
+            if (!anonId) {
+                anonId = 'anon_' + Math.random().toString(36.25) + Date.now().toString(36);
+                localStorage.setItem('glow_anon_id', anonId);
+            }
+            return anonId;
+        }
+
+
         function refreshTimestamp() {
             appState.timestamp = new Date().toLocaleTimeString('en-AU', { hour12: false });
             timestampInput.value = appState.timestamp;
@@ -224,6 +237,7 @@
             messageInput.value = appState.message;
             localeInput.value = appState.locale;
             timestampInput.value = appState.timestamp;
+            userEmailInput.value = appState.user_email;
         }
 
         function updatePreview() {
@@ -262,7 +276,9 @@
             const payload = {
                 message: messageInput.value,
                 locale: localeInput.value,
-                timestamp: timestampInput.value
+                timestamp: timestampInput.value,
+                user_email: userEmailInput.value,
+                anonymous_id: getAnonymousId()
             };
 
             try {

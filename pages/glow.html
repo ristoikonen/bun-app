@@ -399,6 +399,7 @@
                             </button>
                         </div>
                         <input type="text" id="timestampInput" placeholder="HH:MM:SS" class="mono-font">
+                        <input type="hidden" id="userEmailInput" value="risto@gmxi.com">
                     </div>
 
                     <!-- Actions -->
@@ -461,6 +462,7 @@
         const messageInput = document.getElementById('messageInput');
         const localeInput = document.getElementById('localeInput');
         const timestampInput = document.getElementById('timestampInput');
+        const userEmailInput = document.getElementById('userEmailInput');
         const jsonPreviewOutput = document.getElementById('jsonPreviewOutput');
         const statusMessage = document.getElementById('statusMessage');
         const statusIndicator = document.getElementById('statusIndicator');
@@ -485,6 +487,17 @@
             });
         }
 
+        // Get or create a persistent anonymous ID for this browser
+        function getAnonymousId() {
+            let anonId = localStorage.getItem('glow_anon_id');
+            if (!anonId) {
+                anonId = 'anon_' + Math.random().toString(36.25) + Date.now().toString(36);
+                localStorage.setItem('glow_anon_id', anonId);
+            }
+            return anonId;
+        }
+
+
         function refreshTimestamp() {
             appState.timestamp = new Date().toLocaleTimeString('en-AU', { hour12: false });
             timestampInput.value = appState.timestamp;
@@ -502,6 +515,7 @@
             messageInput.value = appState.message;
             localeInput.value = appState.locale;
             timestampInput.value = appState.timestamp;
+            userEmailInput.value = appState.user_email;
         }
 
         function updatePreview() {
@@ -523,7 +537,9 @@
             const payload = {
                 message: messageInput.value,
                 locale: localeInput.value,
-                timestamp: timestampInput.value
+                timestamp: timestampInput.value,
+                user_email: userEmailInput.value,
+                anonymous_id: getAnonymousId()
             };
 
             showStatus("Sending payload: ", JSON.stringify(payload || ''));

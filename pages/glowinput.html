@@ -193,6 +193,17 @@
             });
         }
 
+        // Get or create a persistent anonymous ID for this browser
+        function getAnonymousId() {
+            let anonId = localStorage.getItem('glow_anon_id');
+            if (!anonId) {
+                anonId = 'anon_' + Math.random().toString(36.25) + Date.now().toString(36);
+                localStorage.setItem('glow_anon_id', anonId);
+            }
+            return anonId;
+        }
+
+
         function refreshTimestamp() {
             appState.timestamp = new Date().toLocaleTimeString('en-AU');
             timestampInput.value = appState.timestamp;

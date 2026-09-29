@@ -484,6 +484,16 @@
             });
         }
 
+        // Get or create a persistent anonymous ID for this browser
+        function getAnonymousId() {
+            let anonId = localStorage.getItem('glow_anon_id');
+            if (!anonId) {
+                anonId = 'anon_' + Math.random().toString(36.25) + Date.now().toString(36);
+                localStorage.setItem('glow_anon_id', anonId);
+            }
+            return anonId;
+        }
+
         function refreshTimestamp() {
             appState.timestamp = new Date().toLocaleTimeString('en-AU', { hour12: false });
             timestampInput.value = appState.timestamp;
@@ -501,6 +511,7 @@
             messageInput.value = appState.message;
             localeInput.value = appState.locale;
             timestampInput.value = appState.timestamp;
+            userEmailInput.value = appState.user_email;
         }
 
         function updatePreview() {
@@ -529,7 +540,8 @@
                 message: messageInput.value,
                 locale: localeInput.value,
                 timestamp: timestampInput.value,
-                user_email: userEmailInput.value
+                user_email: userEmailInput.value,
+                anonymous_id: getAnonymousId()
             };
 
             showStatus("Sending payload: ", JSON.stringify(payload || ''));
