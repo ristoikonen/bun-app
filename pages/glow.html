@@ -301,7 +301,41 @@
 <body>
 
     <header>
-        <div class="container header-inner">
+
+
+        
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 10px; height: 10px; background: #f78522; border-radius: 50%; box-shadow: 0 0 8px #f78522;"></div>
+        <span style="color: #fff; font-weight: 600; font-size: 14px; letter-spacing: 0.5px;">IGlow Portal</span>
+    </div>
+    
+
+
+<!--     <div style="position: fixed; top: 20px; right: 20px; background: #1a1e26; border: 1px solid #2f3644; padding: 8px 12px; border-radius: 30px; display: flex; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000; font-family: system-ui, sans-serif;">
+        <a href="/glow" title="Standard Glow" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Glow 1</a>
+        <a href="/glow2" title="Active View" style="color: #fff; background: #f78522; text-decoration: none; font-size: 12px; padding: 6px 12px; border-radius: 20px; font-weight: 600;">Glow 2</a>
+        <a href="/glowdark" title="Dark Variant" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Dark</a>
+        <a href="/profile" title="User Profile" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Profile</a>
+    </div> -->
+
+    <div id="app-floater" style="position: fixed; top: 20px; right: 20px; background: #1a1e26; border: 1px solid #2f3644; padding: 6px 12px 6px 6px; border-radius: 30px; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000; font-family: system-ui, sans-serif; user-select: none;">
+    
+        <!-- Drag Handle on the Left -->
+        <div id="floater-handle" title="Drag to move" style="cursor: grab; display: flex; align-items: center; padding: 0 4px; color: #555d6b; font-size: 14px; letter-spacing: -2px;">
+            ⠿
+        </div>
+
+        <!-- Navigation Links -->
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <a href="/glow" title="Standard Glow" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Glow 1</a>
+            <a href="/glow2" title="Active View" style="color: #fff; background: #f78522; text-decoration: none; font-size: 12px; padding: 6px 12px; border-radius: 20px; font-weight: 600;">Glow 2</a>
+            <a href="/glowdark" title="Dark Variant" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Dark</a>
+            <a href="/profile" title="User Profile" style="color: #9ba1a6; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 20px;">Profile</a>
+        </div>
+    </div>
+
+
+<!--         <div class="container header-inner">
             <div class="flex-row space-x-3">
                 <div class="dot-sm bg-cadenceBlue"></div>
                 <h1 style="font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em;" class="text-slate-900">
@@ -312,10 +346,15 @@
                 <span class="dot-sm bg-emerald animate-pulse"></span>
                 <span>AU 24-Hour Telemetry Schema (en-AU)</span>
             </div>
-        </div>
+        </div> -->
     </header>
 
     <main>
+
+
+
+
+
         <!-- Form Section -->
         <div class="col-span-7" style="display: flex; flex-direction: column; gap: 1.5rem;">
             <div class="card card-shadow">
@@ -410,6 +449,59 @@
     </footer>
 
     <script>
+
+
+
+        // Drag-and-drop logic for the floater
+        const floater = document.getElementById('app-floater');
+        const handle = document.getElementById('floater-handle');
+
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        handle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            handle.style.cursor = 'grabbing';
+            
+            // Get current mouse position
+            startX = e.clientX;
+            startY = e.clientY;
+
+            // Get current element position on screen
+            const rect = floater.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            // Switch from 'right: 20px' to explicit 'left/top' positioning so it can move freely
+            floater.style.right = 'auto';
+            floater.style.left = `${initialLeft}px`;
+            floater.style.top = `${initialTop}px`;
+
+            e.preventDefault(); // Prevent text selection
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            floater.style.left = `${initialLeft + dx}px`;
+            floater.style.top = `${initialTop + dy}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                handle.style.cursor = 'grab';
+            }
+        });
+
+
+        // EO floater drag
+
+
+
         let appState = {
             message: "System operating normally across regional grid.",
             locale: "Palm",

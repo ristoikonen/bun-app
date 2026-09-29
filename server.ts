@@ -25,8 +25,10 @@ import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
 import { OAuth2Client } from 'google-auth-library';
 
+
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const client = new OAuth2Client(CLIENT_ID);
+const allowedOrigin = Bun.env.ALLOWED_ORIGIN || "http://127.0.0.1:5500";
 
 const IMAGES_DIR = "./images";
 const UPLOAD_DIR = "./upload_files";
@@ -34,11 +36,21 @@ const THUMB_DIR = "./thumbnails";
 const RECT1_PNG = "./images/rect1.png";
 const RECT2_PNG = "./images/rect2.png";
 
-
-const apiBaseUrl = process.env.services__apiservice__http__1;
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
+const apiBaseUrl = process.env.services__apiservice__http__1;
+
 
 export async function handleGlowUpload(req: Request, saveFile: boolean = false): Promise<Response> {
+    if (req.method === "OPTIONS") {
+        return new Response(null, {
+            status: 204,
+            headers: {
+                "Access-Control-Allow-Origin": allowedOrigin,
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+            },
+        });
+    }
     try {
         let body: any = {};
         try {
@@ -66,7 +78,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
         }, {
             status: 200,
             headers: {
-                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Origin": allowedOrigin,
                 "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
                 "Access-Control-Allow-Headers": "Content-Type",
                 "Content-Type": "application/json"
@@ -78,7 +90,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
         return new Response("Internal Server Error", { 
             status: 500, 
             headers: { 
-                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Origin": allowedOrigin,
                 "Content-Type": "text/html" 
             } 
         });
@@ -86,21 +98,8 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
 };
 
 
-export async function handleGlowUploadOld(req: Request, saveFile : boolean = false): Promise<Response> {
-    try {
-        console.log(req);
-        return Response.json({
-            placeholder: `/upload/placeholder`,
-            thumbnail: `/upload/thumbnail`,
-        });
-    }
-    catch (error) {
-        console.error("Error handling upload:", error);
-        return new Response("Internal Server Error", { status: 500, headers: { "Content-Type": "text/html" } });
-    }
-};
-
 (async function main() {
+    
     await mkdir(IMAGES_DIR, { recursive: true });
     await mkdir(UPLOAD_DIR, { recursive: true });
     await mkdir(THUMB_DIR, { recursive: true });
@@ -304,36 +303,37 @@ export async function handleGlowUploadOld(req: Request, saveFile : boolean = fal
                     }
                     
                     return new Response(userprofile + "<br/>" + bodyContent + "<br/> Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains. <br/>" + res, {
-                        headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" },
+                        headers: { "Content-Type": "text/html" } ,
+                        //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" },
                     });
                 }
             },
             "/testform": {
-                GET: () => new Response(String(testformPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(testformPage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/newclient": {
-                GET: () => new Response(String(newclientForm), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(newclientForm), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/profilepage": {
-                GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glow": {
-                GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(glowPage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glow2": {
-                GET: () => new Response(String(glow2Page), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(glow2Page), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowspot": {
-                GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowwhite": {
-                GET: () => new Response(String(glowwhitePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(glowwhitePage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowwhitebluet": {
-                GET: () => new Response(String(glowwhitebluePage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(glowwhitebluePage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowdark": {
-                GET: () => new Response(String(glowdarkPage), { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
+                GET: () => new Response(String(glowdarkPage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/api/data": {
                 // Serves user data to profile -page
@@ -354,7 +354,6 @@ export async function handleGlowUploadOld(req: Request, saveFile : boolean = fal
             },
 
            "/api/users/:id": {
-
                 GET: (req: BunRequest) => {
                   //return Response.json({ message: `Fetching user ${req.params.id}` });
                           
@@ -384,6 +383,7 @@ export async function handleGlowUploadOld(req: Request, saveFile : boolean = fal
             },
             "/testupload": {
                 GET: async () => {
+                    //TODO: All file data to init  - move up!
                     const fileData = Bun.file(RECT2_PNG);
                     const blob = new Blob([await fileData.arrayBuffer()], { type: fileData.type });
                     const formData = new FormData();
