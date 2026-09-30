@@ -63,11 +63,12 @@
             }
 
             const data = await res.json();
-            console.log("Success:", data);
+            console.log("=== Success ====");
+            console.log("data:", data);
             console.log("data.redirectUrl:", data.redirectUrl);
 
             if (data.success && data.redirectUrl) {
-                // SUCCESS: Force the browser to change pages
+                // WE HAVE SUCCESS, SO REDIRECT
                 window.location.href = data.redirectUrl; 
             }
             
@@ -84,7 +85,7 @@
         const idToken = response.credential;
         const localuri = "http://localhost:" + port + "/profile";
         
-        console.log("🔒 Raw Google ID Token successfully retrieved:");
+        console.log("Raw Google ID Token successfully retrieved:");
         console.log(idToken);
 
         // Send this ID token to your Bun API endpoint for validation

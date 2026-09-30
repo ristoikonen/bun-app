@@ -1,13 +1,7 @@
 
-const bun = (globalThis as typeof globalThis & {
-  Bun: {
-    env: Record<string, string | undefined>;
-    connect: (options: any) => Promise<any>;
-  };
-}).Bun;
 
-const TARGET_HOST = bun.env.APP_HOST || "localhost";
-const TARGET_PORT = parseInt(bun.env.APP_PORT || "3000", 10);
+const TARGET_HOST = Bun.env.APP_HOST || "localhost";
+const TARGET_PORT = parseInt(Bun.env.APP_PORT || "3000", 10);
 
 const TOTAL_REQUESTS = 1000;
 const CONCURRENCY = 50; 
@@ -37,7 +31,7 @@ let failedRequests = 0;
 
 async function sendRequest() {
   return new Promise<void>((resolve) => {
-    bun.connect({
+    Bun.connect({
       hostname: TARGET_HOST, 
       port: TARGET_PORT, 
       socket: {

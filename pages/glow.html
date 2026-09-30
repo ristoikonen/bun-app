@@ -543,7 +543,6 @@
             };
 
             showStatus("Sending payload: ", JSON.stringify(payload || ''));
-            console.log("Payload JUST before POST fetch:", JSON.stringify(payload || '')); 
 
             try {
                 const response = await fetch('http://localhost:3000/api/glow', {
@@ -558,11 +557,10 @@
 
                 const result = await response.json();
                 showStatus("Payload successfully received and processed by Bun API!", "success");
-                console.log("Response from Bun:", result);
 
             } catch (error) {
                 console.warn("API offline or unreachable. Simulated local success response.");
-                showStatus("Simulated success: API endpoint offline (CORS/Server down).", "success");
+                showStatus("Error in pages submitData but simulated success: API endpoint offline (CORS/Server down).", "success");
             }
         }
         

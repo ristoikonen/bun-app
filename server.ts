@@ -46,7 +46,7 @@ const apiBaseUrl = process.env.services__apiservice__http__1;
 
 const floaterFile = await Bun.file("./uiservices/floater.html");
 const floaterHtml = (await floaterFile.exists()) ? await floaterFile.text() : "";
-console.log(floaterHtml);
+//console.log(floaterHtml);
 const glowPageString = String(glowPage ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glow2PageString = String(glow2Page ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glowdarkPageString = String(glowdarkPage).replaceAll("__FLOATER__", floaterHtml);
@@ -74,8 +74,8 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
             body = {};
         }
 
-        console.log("Received glow upload payload:", body);
-        console.log("saveFile flag:", saveFile);
+        //console.log("Received glow upload payload:", body);
+        //console.log("saveFile flag:", saveFile);
 
         //TODO: remove in PROD -  If saveFile is true, save it to disk using Bun.write for debug
         if (saveFile && body.locale) {

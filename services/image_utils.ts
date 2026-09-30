@@ -12,7 +12,7 @@ console.log(getLuminosityFromHex('#FFFFFF')); // 100 (White)
 console.log(getLuminosityFromHex('#FF5733')); // ~49 (Mid lum)
 console.log(getLuminosityFromHex('344668'));  // ~19 (test without the '#' symbol)
  */
-export default function getLuminosityFromHex(hex: string): Promise<number> {
+export default function getLuminosityFromHex(hex: string): number {
 	// Remove leading '#' 
 	let cleanHex = hex.replace(/^#/, '');
 

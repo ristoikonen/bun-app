@@ -19,7 +19,7 @@ export default async function handleGlowPost(req: BunRequest): Promise<Response>
     try {
         const body = await req.json();
         
-        console.log(body);
+        //console.log(body);
         
         // 1. Validate payload against Zod schema
         const validatedData = GlowPayloadSchema.parse(body);

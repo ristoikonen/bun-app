@@ -434,10 +434,10 @@
                         <p id="statusMessage" class="text-emerald-600 status-box-msg" style="background-color: var(--emerald-50); border: 1px solid var(--emerald-200);">[DEBUG] Form initialized successfully with AU 24-hour time.</p>
                     </div>
                 </div>
-                <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+<!--                 <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                     <span id="statusIndicator" class="dot-sm bg-crayonOrange" title="Orange Accent"></span>
                     <span style="font-size: 0.75rem;" class="text-slate-500">System Indicator State</span>
-                </div>
+                </div> -->
             </div>
         </div>
     </main>
@@ -462,7 +462,7 @@
         const userEmailInput = document.getElementById('userEmailInput');
         const jsonPreviewOutput = document.getElementById('jsonPreviewOutput');
         const statusMessage = document.getElementById('statusMessage');
-        const statusIndicator = document.getElementById('statusIndicator');
+        //const statusIndicator = document.getElementById('statusIndicator');
 
         function init() {
             syncFormFromState();
@@ -545,7 +545,7 @@
             };
 
             showStatus("Sending payload: ", JSON.stringify(payload || ''));
-            console.log("Payload JUST before POST fetch:", JSON.stringify(payload || ''));              
+            //console.log("Glow2page: Payload JUST before POST fetch:", JSON.stringify(payload || ''));              
 
             try {
                 //TODO: dynamic uri!
@@ -564,36 +564,38 @@
                 const result = await response.json();
                 
                 showStatus("Payload successfully received and processed by Bun API!", "success");
-                console.log("Response from Bun:", result);
+                //console.log("Glow2page: Response from Bun:", result);
 
             } catch (error) {
                 console.error("Submission failed:", error);
-                showStatus(`Submission failed: ${error.message}`, "error");
+                showStatus(`Glow2page: Submission failed: ${error.message}`, "error");
             }
         }
         
         function showStatus(msg, type) {
             statusMessage.textContent = msg || '';
+
             if(type === 'success') {
                 statusMessage.className = "status-box-msg";
                 statusMessage.style.color = "var(--emerald-700)";
                 statusMessage.style.backgroundColor = "var(--emerald-50)";
                 statusMessage.style.border = "1px solid var(--emerald-200)";
-                statusIndicator.className = "dot-sm bg-emerald";
+                //statusIndicator.className = "dot-sm bg-emerald";
             } else if(type === 'error') {
                 statusMessage.className = "status-box-msg";
                 statusMessage.style.color = "var(--red-700)";
                 statusMessage.style.backgroundColor = "var(--red-50)";
                 statusMessage.style.border = "1px solid var(--red-200)";
-                statusIndicator.className = "dot-sm";
-                statusIndicator.style.backgroundColor = "#ef4444";
+                //statusIndicator.className = "dot-sm";
+                //statusIndicator.style.backgroundColor = "#ef4444";
             } else {
                 statusMessage.className = "status-box-msg";
                 statusMessage.style.color = "var(--blue-700)";
                 statusMessage.style.backgroundColor = "var(--blue-50)";
                 statusMessage.style.border = "1px solid var(--blue-200)";
-                statusIndicator.className = "dot-sm bg-cadenceBlue";
+                //statusIndicator.className = "dot-sm bg-cadenceBlue";
             }
+
         }
 
         function resetForm() {

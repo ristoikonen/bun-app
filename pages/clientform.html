@@ -1175,7 +1175,7 @@ function showReceipt() {
 
         //plan price assigning
         const { planTitle, planPrice } = getSelectedPlanTitleAndPrice()
-        console.log(planTitle)
+        //console.log(planTitle)
         showPlanCharges(planTitle, "Monthly", planPrice, "mo")
 
         //Add ons displaying
@@ -1368,7 +1368,7 @@ function addFreeStatement(checkBox) {
 
 function setActiveType() {
 
-    console.log(actionTypes)
+    //console.log(actionTypes)
     actionTypes.forEach((type) => {
         type.classList.toggle("activeType")
     })
