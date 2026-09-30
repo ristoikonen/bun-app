@@ -5,8 +5,11 @@ import { Auth } from "./auth";
 import { OAuth2Client } from 'google-auth-library';
 
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
-
 import {getGoogleUserProfileFromCookie} from './services/cookie';
+import { GeoService } from "./services/geoservice";
+import { SecurityInspector } from "./services/security";
+import { GoogleAuthService } from "./services/googleauth";
+
 import {IGlowData,INodeStatus,INodesCollection,IGoogleUserProfile} from './models/IGoogleUserProfile';
 import handleGlowPost from "./handlers/glowdata";
 import handleUpload from './handlers/upload';
@@ -38,7 +41,9 @@ const RECT2_PNG = "./images/rect2.png";
 
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 const apiBaseUrl = process.env.services__apiservice__http__1;
-
+const geoService = new GeoService();
+const securityInspector = new SecurityInspector();
+const googleAuth = new GoogleAuthService();
 
 //const floathtml = await Bun.file("./uiservices/floater.html").text();
 //floathtml = floathtml.replaceAll("__FLOATER__", floaterHtml);
@@ -425,11 +430,103 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                         headers: { "Content-Type": response.headers.get("content-type") ?? "text/html" },
                     });
                 }
+            },
+            "/api/client-geocontext": {
+            GET: async (req) => {
+                const clientGeo = await geoService.getGeoProfile(req);
+
+                return Response.json({
+                    success: true,
+                    timestamp: new Date().toISOString(),
+                    clientContext: clientGeo
+                });
             }
+            },
+            "/api/client-securitycontext": {
+                GET: async (req) => {
+
+                    const clientGeo = await geoService.getGeoProfile(req);
+                    const securityContext = securityInspector.inspect(req);
+
+                    return Response.json({
+                        success: true,
+                        timestamp: new Date().toISOString(),
+                        security: {
+                            authenticated: securityContext.isAuthenticated,
+                            type: securityContext.tokenType,
+                            hasCsrf: Boolean(securityContext.csrfToken),
+                        },
+                        clientContext: clientGeo,
+                    });
+                },
+                POST: async (req) => {
+                    const securityContext = securityInspector.inspect(req);
+
+                    // Optional: Validate Anti-CSRF token for state-changing POST requests
+                    const csrfHeader = req.headers.get("x-csrf-token");
+                    if (securityContext.csrfToken && csrfHeader !== securityContext.csrfToken) {
+                        return Response.json({ error: "Invalid CSRF Token" }, { status: 403 });
+                    }
+
+                    const body = await req.json().catch(() => ({}));
+
+                    return Response.json({
+                        success: true,
+                        message: "POST action processed securely",
+                        receivedData: body,
+                    });
+                }
+            },"/api/user-session": {
+                POST: async (req) => {
+                    
+                    const body = await req.json().catch(() => ({}));
+                    const { idToken, anonymousId } = body;
+
+                    const clientGeo = await geoService.getGeoProfile(req);
+
+                    // Verify Google Login Token if provided
+                    let googleUser = null;
+                    if (idToken) {
+                        googleUser = await googleAuth.verifyIdToken(idToken);
+                    }
+
+                    /*
+                    try {
+                        const stmt = db.prepare(`
+                            INSERT INTO audit_logs (anonymous_id, google_email, ip_address, city, region, timestamp)
+                            VALUES (?, ?, ?, ?, ?, datetime('now'))
+                        `);
+                        stmt.run(
+                            anonymousId || "anonymous",
+                            googleUser ? googleUser.email : "unauthenticated",
+                            clientGeo.ip,
+                            clientGeo.city,
+                            clientGeo.region
+                        );
+                    } catch (dbErr) {
+                        console.error("Failed to write audit log:", dbErr);
+                    }
+                    */
+                    return Response.json({
+                        success: true,
+                        authenticated: Boolean(googleUser),
+                        user: googleUser ? {
+                            email: googleUser.email,
+                            name: googleUser.name,
+                            picture: googleUser.picture,
+                            domain: googleUser.hd
+                        } : null,
+                        clientGeo
+                    });
+                }
+            }
+    
         },
-        // fetch() {
-        //     return new Response('Not Found'); //, { status: 404 }
-        // },
+        // ultimate fallback
+        //fetch() {
+        //     return new Response('Not Found'); 
+                        //Response("Not Found", { status: 404 });
+        //},
     });
 
     console.log(`Bun server listening on http://${server.hostname}:${server.port}`);

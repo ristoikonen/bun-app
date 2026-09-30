@@ -1,62 +1,65 @@
-﻿const UPLOAD_DIR = "./upload_files";
-const THUMB_DIR = "./thumbnails";
-
-// .trim() scrubs away hidden line breaks or white spaces from your .env file
-const rawToken = Bun.env.DROPBOX_ACCESS_TOKEN;
-const dropboxToken = rawToken ? rawToken.trim() : null;
-
-if (!dropboxToken) {
-  console.error("Error: DROPBOX_ACCESS_TOKEN is not set in your environment.");
-  process.exit(1);
-}
-
+﻿// services/dropbox.ts
 const APP_KEY = Bun.env.DROPBOX_APP_KEY;
 const APP_SECRET = Bun.env.DROPBOX_APP_SECRET;
-const REFRESH_TOKEN = Bun.env.DROPBOX_ACCESS_TOKEN;
+const REFRESH_TOKEN = Bun.env.DROPBOX_REFRESH_TOKEN;
 
-// Helper function to dynamically grab a fresh, short-lived token
 async function getValidAccessToken(): Promise<string> {
+  // 1. Diagnostic Visibility Check
+  console.log("🔍 [DIAGNOSTIC CHECKSUM]:", {
+    APP_KEY_LEN: APP_KEY ? APP_KEY.trim().length : 0,
+    APP_SECRET_LEN: APP_SECRET ? APP_SECRET.trim().length : 0,
+    REFRESH_TOKEN_PREFIX: REFRESH_TOKEN ? REFRESH_TOKEN.trim().substring(0, 5) : "NONE",
+    REFRESH_TOKEN_LEN: REFRESH_TOKEN ? REFRESH_TOKEN.trim().length : 0
+  });
+
   if (!APP_KEY || !APP_SECRET || !REFRESH_TOKEN) {
-    throw new Error("Missing Dropbox app credentials in environment variables.");
+    throw new Error("CRITICAL: Missing environment variables in your .env file!");
   }
 
-  const response = await fetch("https://dropboxapi.com", {
+  const tokenUrl = "https://dropboxapi.com";
+  const params = new URLSearchParams();
+  params.append("grant_type", "refresh_token");
+  params.append("refresh_token", REFRESH_TOKEN.trim());
+  params.append("client_id", APP_KEY.trim());
+  params.append("client_secret", APP_SECRET.trim());
+
+  const response = await fetch(tokenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      // Alternative approach: some setups prefer parameters over Basic Auth headers
+      "Accept": "application/json"
     },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: REFRESH_TOKEN.trim(),
-      client_id: APP_KEY.trim(),
-      client_secret: APP_SECRET.trim()
-    })
+    body: params
   });
 
-  // CRITICAL SAFEGUARD: Catch why Dropbox is complaining before parsing JSON
+  const rawBody = await response.text();
+
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Dropbox API Authorization Rejected: ${errorText}`);
+    throw new Error(`[STAGE 1A - DROPBOX REJECTED CREDENTIALS]: ${rawBody}`);
   }
 
-  const data = await response.json();
-  console.log(data);
-  return data.access_token;
+  try {
+    const data = JSON.parse(rawBody);
+    return data.access_token;
+  } catch (jsonErr) {
+    throw new Error(`[STAGE 1B - PARSE FAILURE]: Could not parse response as JSON. Body snippet: "${rawBody.substring(0, 150)}"`);
+  }
 }
-
 
 export default async function uploadToDropbox(fileName: string, fileContent: string) {
   try {
+    console.log("🔄 Fetching active access token...");
     const activeToken = await getValidAccessToken();
-    const targetUrl = "https://dropboxapi.com";
-
-    const response = await fetch(targetUrl, {
+    
+    console.log("📤 Sending file payload to Dropbox content servers...");
+    const uploadUrl = "https://dropboxapi.com";
+    
+    const response = await fetch(uploadUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${activeToken}`,
+        "Authorization": `Bearer ${activeToken.trim()}`,
         "Dropbox-API-Arg": JSON.stringify({
-          path: `/${fileName.trim()}`,
+          path: `/${fileName.trim().replace(/^\/+/, "")}`,
           mode: "overwrite",
           mute: false
         }),
@@ -65,93 +68,18 @@ export default async function uploadToDropbox(fileName: string, fileContent: str
       body: fileContent
     });
 
-    // 1. CRITICAL PROTECTION: Catch server rejections BEFORE parsing JSON
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Dropbox API Upload Rejected: ${errorText}`);
+      throw new Error(`[STAGE 2 - UPLOAD REJECTED]: ${errorText}`);
     }
 
-    // 2. Only parse JSON once we know the server returned a 200 OK success
     const data = await response.json();
     console.log("✅ Upload successful:", data);
+
   } catch (error: any) {
     console.error("❌ Process halted:", error.message || error);
   }
 }
 
-
-
-
-export  async function uploadToDropbox2(fileName: string, fileContent: string) {
-  try {
-    // Dynamically fetch a valid token right before the upload
-    const activeToken = await getValidAccessToken();
-    const targetUrl = "https://dropboxapi.com";
-
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${activeToken}`,
-        "Dropbox-API-Arg": JSON.stringify({
-          path: `/${fileName.trim()}`,
-          mode: "overwrite",
-          mute: false
-        }),
-        "Content-Type": "application/octet-stream"
-      },
-      body: fileContent
-    });
-
-    // Safeguard: Check if Dropbox returned an error before trying to parse JSON
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Dropbox API Server returned error: ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log(" Upload successful:", data);
-  } catch (error: any) {
-    console.error(" Process halted:", error.message || error);
-  }
-}
-
-// Run test
-uploadToDropbox("test.txt", "ok");
-
-
-
-
-export  async function uploadToDropboxOld(fileName: string, fileContent: string) {
-  try {
-    // Explicitly assigning a clean string literal to ensure zero parsing conflicts
-    const targetUrl = "https://dropboxapi.com";
-
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${dropboxToken}`,
-        "Dropbox-API-Arg": JSON.stringify({
-          path: `/${fileName.trim()}`,
-          mode: "overwrite",
-          mute: false
-        }),
-        "Content-Type": "application/octet-stream"
-      },
-      body: fileContent
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Dropbox API Error: ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log("Upload successful:", data);
-  } catch (error: any) {
-    // Enhanced error reporting to see exactly what failed
-    console.error("Upload failed details:", error.message || error);
-  }
-}
-
-
-//uploadToDropboxOld("test.txt", "some text");
+// Run test immediately
+uploadToDropbox("test.txt", "Automated debugging run");
