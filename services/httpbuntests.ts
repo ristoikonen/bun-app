@@ -12,6 +12,7 @@ const BIN_CONCURRENCY = 1;
 
 export class HttpBunClient {
   private baseUrl = "https://httpbun.com";
+  
 
   /**
    * 1. Test and inspect outgoing headers (User-Agent, Custom headers, etc.)
