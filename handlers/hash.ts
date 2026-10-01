@@ -55,3 +55,135 @@ export function calculateUserId(email: string): string {
     .update(email.toLowerCase().trim())
     .digest("hex");
 }
+
+// utils/hash.ts
+
+/**
+ * Creates an anonymous visitor signature using the IP and an OpenSSL hex pepper.
+ */
+export async function generateIPHash(ip: string): Promise<string> {
+  // 1. Fetch your OpenSSL hex secret from environment variables
+  const pepper = process.env.OPENSSL_HEX_SECRET_PEPPER;
+  
+  if (!pepper) {
+    throw new Error("CRITICAL: OPENSSL_HEX_SECRET_PEPPER is missing from environment variables!");
+  }
+
+  // 2. Combine IP with the secret pepper
+  const rawData = `${ip}:${pepper}`;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(rawData);
+
+  // 3. Hash securely using Bun's native Web Crypto API
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+  // Return a clean anonymous token
+  return `anon_${hashHex.substring(0, 24)}`;
+}
+
+
+/**
+ * Turns an IP address into a secure, anonymous hash string.
+ * Adds an optional secret salt so the hash cannot be reverse-engineered back to the raw IP.
+ */
+export async function generateIPHashOLD(ip: string): Promise<string> {
+  const salt = process.env.IP_HASH_SALT || "glow-default-salt-2026";
+  const encoder = new TextEncoder();
+  const data = encoder.encode(ip + salt);
+
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  
+
+  return `anon_ip_${hashHex.substring(0, 24)}`;
+}
+
+
+interface UsageRecord {
+  count: number;
+  resetTime: number;
+}
+
+
+const usageStore = new Map<string, UsageRecord>();
+
+const MAX_FREE_PROMPTS = 5;
+const WINDOW_DURATION_MS = 24 * 60 * 60 * 1000; 
+
+export async function checkIPLimit(rawIp: string): Promise<{ allowed: boolean; remaining: number }> {
+
+  const ipHash = await generateIPHash(rawIp);
+  
+  const now = Date.now();
+  let record = usageStore.get(ipHash);
+
+
+  if (!record || now > record.resetTime) {
+    record = { count: 0, resetTime: now + WINDOW_DURATION_MS };
+    usageStore.set(ipHash, record);
+  }
+
+
+  if (record.count >= MAX_FREE_PROMPTS) {
+    return { allowed: false, remaining: 0 };
+  }
+
+
+  record.count++;
+  usageStore.set(ipHash, record);
+
+  return {
+    allowed: true,
+    remaining: MAX_FREE_PROMPTS - record.count,
+  };
+}
+
+/*
+// server.ts
+import { serve } from "bun";
+import { jsonResponse, errorResponse } from "./utils/response";
+import { checkIPLimit } from "./services/aiRateLimiter";
+
+serve({
+  port: 3000,
+  async fetch(req) {
+    const url = new URL(req.url);
+
+    if (url.pathname === "/api/glow/ai" && req.method === "POST") {
+      // 1. Extract client IP safely (handling proxy headers if behind Cloudflare/Nginx)
+      const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || 
+                       req.headers.get("x-real-ip") || 
+                       "127.0.0.1";
+
+      // 2. Check limit using the IP-derived anonymous hash
+      const limitCheck = await checkIPLimit(clientIp);
+
+      if (!limitCheck.allowed) {
+        return errorResponse(
+          "Free AI generation limit reached for your network session. Please log in to continue.",
+          429 // Too Many Requests
+        );
+      }
+
+      // 3. Parse user prompt & run Gemini AI generation...
+      const body = await req.json() as { prompt?: string };
+      
+      return jsonResponse({
+        success: true,
+        response: `AI generated response for prompt: "${body.prompt || ""}"`,
+        freePromptsRemaining: limitCheck.remaining,
+      });
+    }
+
+    return errorResponse("Not Found", 404);
+  },
+});
+
+console.log("🚀 Bun AI Gateway running at http://localhost:3000");
+
+*/

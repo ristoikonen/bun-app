@@ -12,32 +12,44 @@ const GlowPayloadSchema = z.object({
     message: z.string().min(1, "Message cannot be empty"),
     locale: z.string().min(1, "Locale is required"),
     timestamp: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Invalid timestamp format (HH:MM:SS)"),
-    user_email: z.email("Invalid email address") 
+    user_email: z.email("Invalid email address"),
+    anonymous_id: z.string().nullable(),
 });
 
 export default async function handleGlowPost(req: BunRequest): Promise<Response> {
     try {
         const body = await req.json();
-        
-        //console.log(body);
+               
         
         // 1. Validate payload against Zod schema
         const validatedData = GlowPayloadSchema.parse(body);
 
+        //console.log(body);
+        console.log(validatedData.message);
+        console.log(validatedData.locale);
+        console.log(validatedData.timestamp);
+        console.log(validatedData.user_email || '');
+        console.log(validatedData.anonymous_id);
+        
+        console.log(validatedData);
+        
         //TODO: user_email to payloads! - Insert into Turso database using the exact column name `user_email`
-        await db.execute({
-            sql: `INSERT INTO glow_logs (message, locale, timestamp, user_email) VALUES (?, ?, ?, ?)`,
+        const rs= await db.execute({
+            sql: `INSERT INTO glow_logs (message, locale, timestamp, user_email, anonymous_id) VALUES (?, ?, ?, ?, ?)`,
             args: [
                 validatedData.message, 
                 validatedData.locale, 
                 validatedData.timestamp, 
-                validatedData.user_email || ''
+                validatedData.user_email || '',
+                validatedData.anonymous_id
             ]
         });
 
+        const rows = rs.rowsAffected ?? 0;
+
         return Response.json({ 
             success: true, 
-            message: "Glow log saved successfully with user email", 
+            message: rows.toString() + " row(s) inserted", 
             data: validatedData 
         }, { status: 201 });
 
