@@ -27,6 +27,26 @@ export default async function askGemini(ai: GoogleGenAI, promptText: string): Pr
 }
 
 
+export async function generateChatResponse(prompt: string, systemInstruction?: string): Promise<string> {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash", // Low-latency model optimized for APIs
+      contents: prompt,
+      config: {
+        systemInstruction: systemInstruction || "You are a secure, high-performance AI assistant operating on a Bun runtime backend.",
+        temperature: 0.7,
+      }
+    });
+
+
+    return response.text || "No response generated.";
+  } catch (error) {
+    console.error("[Gemini AI Error]", error);
+    throw new Error("AI generation failed.");
+  }
+}
+
+
 export async function askGeminiImageQuestion(ai: GoogleGenAI, promptText: string, imageFile: Bun.Image): Promise<string> {
     try {
         const response = await ai.models.generateContent({

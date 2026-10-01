@@ -9,7 +9,6 @@
         <a href="/glow" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">Glow 1</a>
         <a href="/glow2" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 14px; border-radius: 20px;">Glow 2</a>
         <a href="/glowdark" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">Dark</a>
-        <a href="/glowwhite" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">White</a>
         <a href="/profile" class="floater-link" style="color: #9ba1a6; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 20px;">Profile</a>
     </div>
 </div>
@@ -42,9 +41,9 @@
     }
 
     if (isDarkBackground(bodyBg)) {
-        handleEl.style.color = '#8a93a0'; // Light gray handle for dark themes (glowdark)
+        handleEl.style.color = '#8a93a0'; // Light gray handle for dark themes
     } else {
-        handleEl.style.color = '#4b5563'; // Darker gray handle for light themes (glowwhite)
+        handleEl.style.color = '#4b5563'; // Darker gray handle for light themes
     }
 
     // 3. Scoped drag-and-drop logic for the floater

@@ -24,10 +24,7 @@ import baseimagePage from "./pages/baseimage.html" with { type: "text" };
 import glowPage from "./pages/glow.html" with { type: "text" };
 import glow2Page from "./pages/glow2.html" with { type: "text" };
 import glowdarkPage from "./pages/glowdark.html" with { type: "text" };
-import glowspotPage from "./pages/glowspot.html" with { type: "text" };
-import glowwhitePage from "./pages/glowwhite.html" with { type: "text" };
-import glowwhitebluePage from "./pages/glowwhiteblue.html" with { type: "text" };
-import googletokenPage from "./pages/googletoken.html" with { type: "text" };
+//import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
 
 
@@ -451,15 +448,6 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
             "/glow2": {
                 GET: () => new Response(glow2PageString ?? '', { headers: { "Content-Type": "text/html" } }) 
                 // GET: () => new Response(String(glow2Page), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
-            },
-            "/glowspot": {
-                GET: () => new Response(String(glowspotPage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
-            },
-            "/glowwhite": {
-                GET: () => new Response(String(glowwhitePage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
-            },
-            "/glowwhitebluet": {
-                GET: () => new Response(String(glowwhitebluePage), { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
             "/glowdark": {
                 GET: () => new Response(glowdarkPageString, { headers: { "Content-Type": "text/html" } })  //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
