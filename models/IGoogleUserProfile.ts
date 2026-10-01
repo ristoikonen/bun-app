@@ -31,6 +31,6 @@ export interface IGlowData {
   locale: string;         // e.g., 'Palm','Crace','Kaleen','Gira'
   timestamp: string;      // Formatted via toLocaleTimeString()
   user_email:string;
-  nodes: INodesCollection;
+  //nodes: INodesCollection;
 }
 

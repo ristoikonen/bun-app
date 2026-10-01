@@ -1,0 +1,43 @@
+// types.ts
+
+export interface IGoogleUserProfile {
+    iss: string;
+    azp: string;
+    aud: string;
+    sub: string;
+    email: string;
+    email_verified: boolean;
+    nbf: number;
+    name: string;
+    picture: string;
+    given_name: string;
+    family_name: string;
+    iat: number;
+    exp: number;
+    jti: string;
+}
+
+export interface INodeStatus {
+    status: string; // e.g., 'online', 'offline', 'maintenance'
+}
+
+export interface INodesCollection {
+    nodeA: INodeStatus;
+    nodeB: INodeStatus;
+    [key: string]: INodeStatus; // Allows for scaling beyond Node A & B
+}
+
+export interface IGlowData {
+    message: string;        
+    locale: string;         // e.g., 'Palm', 'Crace', 'Kaleen', 'Gira'
+    timestamp: string;      // Formatted via toLocaleTimeString()
+    user_email: string;
+    //nodes: INodesCollection;
+}
+
+export interface RequestContext {
+    userId: string | null;
+    authToken: string | null;
+    query: string;
+    clientIp: string;
+}

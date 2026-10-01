@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bun + Gemini | White & Light Blue Glow Stream</title>
+    <!-- Google Fonts for Clean Terminal Mono & Sans UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #f0f4f8;
+            --surface: #ffffff;
+            --surface-glass: rgba(255, 255, 255, 0.85);
+            --border-glow: rgba(0, 119, 237, 0.18);
+            --border-glow-active: rgba(0, 119, 237, 0.5);
+            --neon-blue: #0077ed;
+            --neon-cyan: #00a8ff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --terminal-bg: #0d131f; /* Dark terminal contrast box for JSON preview */
+            --terminal-text: #e0f2fe; /* Brighter, glowing icy white/cyan */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Soft ambient blue/white background glow gradient */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 168, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 119, 237, 0.08) 0%, transparent 40%);
+        }
+
+        .glow-container {
+            width: 90vw;
+            max-width: 900px;
+            height: 85vh;
+            background: var(--surface-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 119, 237, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+
+        .glow-container:hover {
+            border-color: var(--border-glow-active);
+        }
+
+        /* Header Bar */
+        .chat-header {
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid var(--border-glow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--neon-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-blue);
+            animation: pulse 2s infinite;
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .badge {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            background: rgba(0, 119, 237, 0.08);
+            color: var(--neon-blue);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 119, 237, 0.2);
+        }
+
+        /* Message Stream Feed */
+        .chat-stream {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .message-label {
+            font-size: 11px;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .message.user .message-label {
+            text-align: right;
+        }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, rgba(0, 119, 237, 0.1), rgba(0, 168, 255, 0.15));
+            border: 1px solid rgba(0, 119, 237, 0.25);
+            color: var(--text-main);
+            border-bottom-right-radius: 2px;
+        }
+
+        /* JSON Preview Terminal Style Output */
+        .terminal-box {
+            background-color: var(--terminal-bg);
+            border: 1px solid rgba(0, 119, 237, 0.4);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--terminal-text);
+            white-space: pre-wrap;
+            word-break: break-all;
+            /* Added glowing text shadow effect */
+            text-shadow: 0 0 8px rgba(0, 168, 255, 0.4);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 119, 237, 0.15);
+            position: relative;
+        }
+
+        .terminal-box::before {
+            content: "STREAM_OUTPUT // JSON_TERMINAL";
+            display: block;
+            font-size: 9px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            letter-spacing: 0.1em;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 4px;
+            text-shadow: none;
+        }
+
+        /* Typing Cursor Effect */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: var(--neon-cyan);
+            vertical-align: middle;
+            margin-left: 4px;
+            box-shadow: 0 0 8px var(--neon-cyan);
+            animation: blink 1s infinite;
+        }
+
+        /* Input Control Area */
+        .chat-input-area {
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid var(--border-glow);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid rgba(0, 119, 237, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 12px rgba(0, 119, 237, 0.2);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-cyan));
+            color: #ffffff;
+            border: none;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 119, 237, 0.3);
+        }
+
+        .send-btn:hover {
+            box-shadow: 0 6px 18px rgba(0, 119, 237, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 119, 237, 0.2);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 119, 237, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="logo-area">
+                <div class="status-dot"></div>
+                <span class="title">Bun Server // Stream Portal</span>
+            </div>
+            <div class="badge">GEMINI-FLASH : ACTIVE</div>
+        </div>
+
+        <!-- Chat Stream Box -->
+        <div class="chat-stream" id="chatStream">
+            <div class="message assistant">
+                <span class="message-label">System Terminal</span>
+                <div class="terminal-box">Ready for telemetry input or prompt instruction.<span class="cursor"></span></div>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="chat-input-area">
+            <input type="text" id="userInput" class="chat-input" placeholder="Type prompt for Bun stream response..." autofocus autocomplete="off">
+            <button id="sendBtn" class="send-btn" onclick="sendMessage()">TRANSMIT</button>
+        </div>
+    </div>
+
+    <script>
+        const chatStream = document.getElementById('chatStream');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // Append User Message Bubble
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'message user';
+            userMsgDiv.innerHTML = `
+                <span class="message-label">User Payload</span>
+                <div class="bubble">${escapeHtml(text)}</div>
+            `;
+            chatStream.appendChild(userMsgDiv);
+            scrollToBottom();
+
+            // Create Assistant Terminal Box for Stream Response
+            const assistantMsgDiv = document.createElement('div');
+            assistantMsgDiv.className = 'message assistant';
+            
+            const terminalBox = document.createElement('div');
+            terminalBox.className = 'terminal-box';
+            
+            assistantMsgDiv.innerHTML = `<span class="message-label">Stream Response</span>`;
+            assistantMsgDiv.appendChild(terminalBox);
+            chatStream.appendChild(assistantMsgDiv);
+
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            terminalBox.appendChild(cursor);
+
+            try {
+                const response = await fetch('/api/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: text })
+                });
+
+                if (!response.ok) throw new Error('Network response failed');
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let accumulatedText = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    accumulatedText += chunk;
+                    
+                    terminalBox.textContent = accumulatedText;
+                    terminalBox.appendChild(cursor);
+                    scrollToBottom();
+                }
+
+            } catch (err) {
+                terminalBox.textContent = `[ERROR]: Connection failed or stream interrupted. (${err.message})`;
+            } finally {
+                cursor.remove();
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        function scrollToBottom() {
+            chatStream.scrollTop = chatStream.scrollHeight;
+        }
+
+        function escapeHtml(string) {
+            return string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>

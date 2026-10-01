@@ -4,17 +4,20 @@ import { Glob,  BunRequest} from "bun";
 import { Auth } from "./auth";
 import { OAuth2Client } from 'google-auth-library';
 
+import {IGlowData,IGoogleUserProfile} from './types';
+import { mockGlowsDb } from './utils/mocks';
+import { errorJSONResponseCORS, successJSONResponseCORS,errorJSONResponse, successJSONResponse } from "./utils/response";
 import askGemini, { analyseGeminiBase64, askGeminiImageQuestion } from './services/ask_gemini';
 import {getGoogleUserProfileFromCookie} from './services/cookie';
 import { GeoService } from "./services/geoservice";
 import { SecurityInspector } from "./services/security";
 import { GoogleAuthService } from "./services/googleauth";
 
-import {IGlowData,INodeStatus,INodesCollection,IGoogleUserProfile} from './models/IGoogleUserProfile';
 import handleGlowPost from "./handlers/glowdata";
 import handleUpload from './handlers/upload';
 import verifyUserWithBackend, { verifyIdToken } from './handlers/verify';
-import newclientForm from "./pages/newclient.html" with { type: "text" };
+import newclientForm from "./pages/chattish.html" with { type: "text" };
+import chattishPage from "./pages/chattish.html" with { type: "text" };
 import testformPage from "./pages/testform.html" with { type: "text" };
 import profilePage from "./pages/profile.html" with { type: "text" };
 import baseimagePage from "./pages/baseimage.html" with { type: "text" };
@@ -26,7 +29,6 @@ import glowwhitePage from "./pages/glowwhite.html" with { type: "text" };
 import glowwhitebluePage from "./pages/glowwhiteblue.html" with { type: "text" };
 import googletokenPage from "./pages/googletoken.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
-
 
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
@@ -45,19 +47,18 @@ const geoService = new GeoService();
 const securityInspector = new SecurityInspector();
 const googleAuth = new GoogleAuthService();
 
-//const floathtml = await Bun.file("./uiservices/floater.html").text();
-//floathtml = floathtml.replaceAll("__FLOATER__", floaterHtml);
-//const floaterFile = Bun.file("./uiservices/floater.html");
-
 const floaterFile = await Bun.file("./uiservices/floater.html");
 const floaterHtml = (await floaterFile.exists()) ? await floaterFile.text() : "";
-//console.log(floaterHtml);
 const glowPageString = String(glowPage ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glow2PageString = String(glow2Page ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glowdarkPageString = String(glowdarkPage).replaceAll("__FLOATER__", floaterHtml);
 
 
+//const floathtml = await Bun.file("./uiservices/floater.html").text();
+//floathtml = floathtml.replaceAll("__FLOATER__", floaterHtml);
+//const floaterFile = Bun.file("./uiservices/floater.html");
 //glowPage = glowPage.replaceAll("__FLOATER__", floaterHtml);
+
 
 export async function handleGlowUpload(req: Request, saveFile: boolean = false): Promise<Response> {
     if (req.method === "OPTIONS") {
@@ -131,11 +132,11 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
     }
     const ai = new GoogleGenAI();
 
-
     // Incoming req object is a BunRequest
     const server = Bun.serve({
         port,
         routes: {
+                
             "/auth/callback": {
                 GET: (req) => {
                     const url = new URL(req.url);
@@ -161,6 +162,99 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                 POST: async (req) => await handleGlowPost(req)
                 // POST: async (req) => await handleGlowUpload(req)
             },
+
+// glows route handler block
+
+// GET /api/glows -> Handles list lookups and optional parameters
+
+    "/api/glows": {
+      async GET(req) {
+        const url = new URL(req.url);
+        const localeFilter = url.searchParams.get("locale");
+        const emailFilter = url.searchParams.get("email");
+
+        let results = [...mockGlowsDb];
+
+        if (localeFilter) {
+          results = results.filter(g => g.locale.toLowerCase() === localeFilter.toLowerCase());
+        }
+        if (emailFilter) {
+          results = results.filter(g => g.user_email.toLowerCase() === emailFilter.toLowerCase());
+        }
+
+        return successJSONResponse(results);
+      },
+
+      // POST /api/glows -> Creates a new localized data object
+      async POST(req) {
+        try {
+          const body = await req.json();
+          if (!body.message || !body.locale || !body.user_email) {
+            return errorJSONResponse("Missing required payload attributes", 400);
+          }
+
+          const newGlow: IGlowData = {
+            //id: crypto.randomUUID(),
+            message: body.message,
+            locale: body.locale,
+            user_email: body.user_email,
+            timestamp: new Date().toISOString() // Server-enforced timestamp
+          };
+
+          mockGlowsDb.push(newGlow);
+          return successJSONResponse(newGlow, 201);
+        } catch {
+          return errorJSONResponse("Malformed payload body syntax", 400);
+        }
+      }
+    },
+
+    // glow  - Dynamic route handler targeting an item resource by explicit identifier
+
+    "/api/glows/:user_email": {
+      // GET /api/glows/:user_email -> Retrieves a specific record
+      async GET(req) {
+        const id = req.params.user_email; // Natively extracted from path key signature
+        const glow = mockGlowsDb.find(g => g.user_email === id);
+        if (!glow) return errorJSONResponse("Resource item not located" , 404);
+        return successJSONResponse(glow);
+      },
+
+      // PATCH /api/glows/:id -> Mutates specific parameters on the object
+      async PATCH(req) {
+        try {
+          const user_email = req.params.user_email;
+          const body = await req.json();
+          const targetIndex = mockGlowsDb.findIndex(g => g.user_email === user_email);
+          
+          if (targetIndex === -1) return errorJSONResponse("Resource item not located", 404);
+
+          mockGlowsDb[targetIndex] = {
+            ...mockGlowsDb[targetIndex],
+            ...body
+          };
+
+          return successJSONResponse(mockGlowsDb[targetIndex]);
+        } catch {
+          return errorJSONResponse("Malformed payload body syntax" , 400);
+        }
+      },
+
+      // DELETE /api/glows/:id -> Removes the resource item
+      async DELETE(req) {
+        const user_email = req.params.user_email;
+        const targetIndex = mockGlowsDb.findIndex(g => g.user_email === user_email);
+        
+        if (targetIndex === -1) return errorJSONResponse("Resource item not located" , 404);
+
+        mockGlowsDb.splice(targetIndex, 1);
+        return successJSONResponse(`Glow user email ${user_email} unlinked successfully.`);
+      }
+    },
+
+
+// EO glows route handler block
+
             "/submit_form": {
                 POST: () => new Response("submit_form", { headers: { "Content-Type": "text/html" } })
             },
@@ -183,11 +277,12 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                                 locale: 'Palm',
                                 timestamp: new Date().toLocaleTimeString('en-AU'),
                                 user_email: '',
-                                // Randomly rotate states for visualization testing
+                                /*
                                 nodes: {
                                     nodeA: { status: states[Math.floor(Math.random() * states.length)] },
                                     nodeB: { status: states[Math.floor(Math.random() * states.length)] }
                                 }
+                                */
                             };
 
                             controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
@@ -344,6 +439,10 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
             "/profile": {
                 GET: () => new Response(String(profilePage), { headers: { "Content-Type": "text/html" } }) //headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } })
             },
+            "/chattish": {
+                //GET: () => new Response(chattishPageString ?? '', { headers: { "Content-Type": "text/html" } }) 
+                GET: () => new Response(String(chattishPage), { headers: { "Content-Type": "text/html" } })
+            },            
             "/glow": {
                 
                 GET: () => new Response(glowPageString ?? '', { headers: { "Content-Type": "text/html" } }) 
@@ -378,7 +477,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
 
                     } catch (error) {
                         console.error("Failed to parse session token:", error);
-                        return Response.json({ error: "Invalid token" }, { status: 400 });
+                        return errorJSONResponse("Invalid token", 400);
                     }
                 }
             },
@@ -397,9 +496,10 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                     // const userId = Number(userIdStr); 
                     const user = users.find(u => u.id === userIdStr);
                     if (!user) {
-                        return Response.json({ error: "User not found" }, { status: 404 });
-                    }
+                        //return Response.json({ error: "User not found" }, { status: 404 });
+                        return errorJSONResponse("User not found" , 404);
 
+                    }
                     return Response.json({ success: true, data: user }); 
                     },
             },
