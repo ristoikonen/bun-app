@@ -32,13 +32,13 @@ const googleClientID = Bun.env.GOOGLE_CLIENT_ID || "";
 const client = new OAuth2Client(googleClientID);
 const allowedOrigin = Bun.env.ALLOWED_ORIGIN || "http://127.0.0.1:5500";
 
-const IMAGES_DIR = "./images";
-const UPLOAD_DIR = "./upload_files";
-const THUMB_DIR = "./thumbnails";
-const RECT1_PNG = "./images/rect1.png";
-const RECT2_PNG = "./images/rect2.png";
+const imageDir = "./images";
+const uploadDir = "./upload_files";
+const thumbDir = "./thumbnails";
+const imageRect1 = "./images/rect1.png";
+const imageRect2 = "./images/rect2.png";
 
-const filerect2Data = Bun.file(RECT2_PNG);
+const filerect2Data = Bun.file(imageRect2);
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
 const floaterFile = await Bun.file("./uiservices/floater.html");
 
@@ -52,13 +52,12 @@ const glowPageString = String(glowPage ?? '').replaceAll("__FLOATER__", floaterH
 const glow2PageString = String(glow2Page ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glowdarkPageString = String(glowdarkPage).replaceAll("__FLOATER__", floaterHtml);
 
-
 //const floathtml = await Bun.file("./uiservices/floater.html").text();
 //floathtml = floathtml.replaceAll("__FLOATER__", floaterHtml);
 //const floaterFile = Bun.file("./uiservices/floater.html");
 //glowPage = glowPage.replaceAll("__FLOATER__", floaterHtml);
 
-//TODO: Move to handlers
+//TODO: Move to handlers, add: const allowedOrigin = Bun.env.ALLOWED_ORIGIN || "http://127.0.0.1:5500";
 export async function handleGlowUpload(req: Request, saveFile: boolean = false): Promise<Response> {
     if (req.method === "OPTIONS") {
         return new Response(null, {
@@ -80,7 +79,6 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
         }
 
         //console.log("Received glow upload payload:", body);
-        //console.log("saveFile flag:", saveFile);
 
         //TODO: remove in PROD -  If saveFile is true, save it to disk using Bun.write for debug
         if (saveFile && body.locale) {
@@ -120,9 +118,9 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
 
 (async function main() {
     
-    await mkdir(IMAGES_DIR, { recursive: true });
-    await mkdir(UPLOAD_DIR, { recursive: true });
-    await mkdir(THUMB_DIR, { recursive: true });
+    await mkdir(imageDir, { recursive: true });
+    await mkdir(uploadDir, { recursive: true });
+    await mkdir(thumbDir, { recursive: true });
 
     const port = Number(Bun.env.APP_PORT ?? 3000);
     const host = Bun.env.APP_HOST ?? "localhost";
@@ -356,8 +354,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
             },
             "/signin": {
                 GET: () => {
-                    const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
-                    const renderedHtml = String(signinPage).replace("__GOOGLE_CLIENT_ID__", clientID);
+                    const renderedHtml = String(signinPage).replace("__GOOGLE_CLIENT_ID__", googleClientID);
                     return new Response(renderedHtml, { headers: { "Content-Type": "text/html", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" } });
 
                 //POST: () => new Response(String(signinPage), { headers: { "Content-Type": "text/html" } })
@@ -383,12 +380,12 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
                     
                     const imagesfilenames: Array<string> = [];
                     const glob = new Glob("*");
-                    for (const file of glob.scanSync(IMAGES_DIR)) {
-                        imagesfilenames.push(IMAGES_DIR + "/" + file);
+                    for (const file of glob.scanSync(imageDir)) {
+                        imagesfilenames.push(imageDir + "/" + file);
                     }
                     
                     const bunimages: Array<any> = [];
-                    const fileArrayData = Bun.file(RECT1_PNG);
+                    const fileArrayData = Bun.file(imageRect1);
                     const image1 = new Bun.Image(await fileArrayData.arrayBuffer());
                     const base64String = await image1.toBase64();
 

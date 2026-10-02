@@ -1,6 +1,6 @@
 # Response Guide
 
-A collection of utility methods in **response.ts** designed to save a substantial amount of boilerplate code while remaining simple and predictable. They simply wrap and standardise your JSON responses.
+A collection of utility methods in **response.ts** designed to save a substantial amount of boilerplate code while remaining simple. They simply wrap and standardise your JSON responses.
 
 ## Quick Reference
 
