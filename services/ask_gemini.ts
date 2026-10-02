@@ -6,6 +6,7 @@ const UPLOAD_DIR = "./upload_files";
 const THUMB_DIR = "./thumbnails";
 const MODEL_NAME = "gemini-3.5-flash-lite";
 
+//TODO: Put model name to CONST!
 
 export default async function askGemini(ai: GoogleGenAI, promptText: string): Promise<string> {
     try {

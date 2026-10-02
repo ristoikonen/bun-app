@@ -20,7 +20,7 @@ export interface M2131LogRecord {
   headers_summary: string;          
   [key: string]: any;             
 }
-// TODO: THIS IS MIDDLEWARE!! make to work with Bun
+// TODO: THIS IS MIDDLEWARE!! make to work with Bun -> Add BunRequest etc.
 /**
  * Generates an M-21-31 & ACSC compliant key-value log string.
  */

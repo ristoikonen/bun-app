@@ -28,8 +28,8 @@ import glowdarkPage from "./pages/glowdark.html" with { type: "text" };
 import signinPage from "./pages/signin.html" with { type: "text" };
 
 
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
-const client = new OAuth2Client(CLIENT_ID);
+const googleClientID = Bun.env.GOOGLE_CLIENT_ID || "";
+const client = new OAuth2Client(googleClientID);
 const allowedOrigin = Bun.env.ALLOWED_ORIGIN || "http://127.0.0.1:5500";
 
 const IMAGES_DIR = "./images";
@@ -38,14 +38,16 @@ const THUMB_DIR = "./thumbnails";
 const RECT1_PNG = "./images/rect1.png";
 const RECT2_PNG = "./images/rect2.png";
 
+const filerect2Data = Bun.file(RECT2_PNG);
 const googleTokenPageText = await Bun.file("./pages/googletoken.html").text();
+const floaterFile = await Bun.file("./uiservices/floater.html");
+
+const floaterHtml = (await floaterFile.exists()) ? await floaterFile.text() : "";
 const apiBaseUrl = process.env.services__apiservice__http__1;
 const geoService = new GeoService();
 const securityInspector = new SecurityInspector();
 const googleAuth = new GoogleAuthService();
 
-const floaterFile = await Bun.file("./uiservices/floater.html");
-const floaterHtml = (await floaterFile.exists()) ? await floaterFile.text() : "";
 const glowPageString = String(glowPage ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glow2PageString = String(glow2Page ?? '').replaceAll("__FLOATER__", floaterHtml);
 const glowdarkPageString = String(glowdarkPage).replaceAll("__FLOATER__", floaterHtml);
@@ -56,7 +58,7 @@ const glowdarkPageString = String(glowdarkPage).replaceAll("__FLOATER__", floate
 //const floaterFile = Bun.file("./uiservices/floater.html");
 //glowPage = glowPage.replaceAll("__FLOATER__", floaterHtml);
 
-
+//TODO: Move to handlers
 export async function handleGlowUpload(req: Request, saveFile: boolean = false): Promise<Response> {
     if (req.method === "OPTIONS") {
         return new Response(null, {
@@ -113,6 +115,7 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
         });
     }
 };
+
 
 
 (async function main() {
@@ -408,10 +411,9 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
 
                     const bodyContent = countimages.toString() + " images found in the images folder." + imageHTML + images;
                     let res = "No analysis";
-                    const fileArrayData2 = Bun.file(RECT2_PNG);
-                    if (await fileArrayData2.exists()) {
-                        const image2 = new Bun.Image(await fileArrayData2.arrayBuffer());
-                        const byteSpan = new Uint8Array(await fileArrayData2.arrayBuffer());
+                    if (await filerect2Data.exists()) {
+                        const image2 = new Bun.Image(await filerect2Data.arrayBuffer());
+                        const byteSpan = new Uint8Array(await filerect2Data.arrayBuffer());
                         //TODO add format check
                         res = await askGeminiImageQuestion(ai, "Analyse image, descibe it's form and size: width and height in pixels; [x px] and [y px] and what it contains", image2) ?? "No analysis";
                     }
@@ -493,17 +495,17 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
             },
             "/googletoken": {
                 GET: () => {
-                    const clientID = Bun.env.GOOGLE_CLIENT_ID || "";
+                    
                     const sport = String(port) || "";
-                    const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", clientID).replace("__PORT__", sport);
+                    const renderedHtml = googleTokenPageText.replace("__GOOGLE_CLIENT_ID__", googleClientID).replace("__PORT__", sport);
                     return new Response(renderedHtml, { headers: { "Content-Type": "text/html" } });
                 }
             },
             "/testupload": {
                 GET: async () => {
                     //TODO: All file data to init  - move up!
-                    const fileData = Bun.file(RECT2_PNG);
-                    const blob = new Blob([await fileData.arrayBuffer()], { type: fileData.type });
+                    
+                    const blob = new Blob([await filerect2Data.arrayBuffer()], { type: filerect2Data.type });
                     const formData = new FormData();
                     formData.append("image", blob, "test.jpg");
 

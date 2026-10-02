@@ -2,7 +2,6 @@
 
 import testHashAndVerifyUserWithBackend from './services/security';
 
-
     const theArgs = Bun.argv.slice(1);
     console.log("Mains params:", theArgs);
 
@@ -133,7 +132,6 @@ export async function checkIPLimit(rawIp: string): Promise<{ allowed: boolean; r
     return { allowed: false, remaining: 0 };
   }
 
-
   record.count++;
   usageStore.set(ipHash, record);
 
@@ -142,6 +140,7 @@ export async function checkIPLimit(rawIp: string): Promise<{ allowed: boolean; r
     remaining: MAX_FREE_PROMPTS - record.count,
   };
 }
+
 
 /*
 // server.ts
