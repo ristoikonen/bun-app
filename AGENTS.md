@@ -14,7 +14,7 @@ This file provides architectural context, commands, and conventions for AI codin
 Always use `bun` as the package manager and runner instead of npm, yarn, or node.
 
 * **Install Dependencies:** `bun install`
-* **Run Development Server:** `bun --hot run src/index.ts` (or your entry point)
+* **Run Development Server:** `bun --hot run server.ts`
 * **Run Tests:** `bun test`
 * **Run a Single Test File:** `bun test src/path/to/test.test.ts`
 

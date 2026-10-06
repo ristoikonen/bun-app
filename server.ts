@@ -134,7 +134,6 @@ export async function handleGlowUpload(req: Request, saveFile: boolean = false):
     const server = Bun.serve({
         port,
         routes: {
-                
             "/auth/callback": {
                 GET: (req) => {
                     const url = new URL(req.url);

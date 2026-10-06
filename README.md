@@ -76,7 +76,7 @@ Edit .env and source code to suit your environment.
 Sample code runs in AWS and accesses Google API for AI services.
 
 ```txt
-GOOGLE_API_KEY=AQ.fatduckfoundhistuck
+GEMINI_API_KEY=AQ.fatduckfoundhistuck
 AWS_ACCESS_KEY_ID=MONGTHECLOUDSLIKEELO
 AWS_SECRET_ACCESS_KEY=MUMBOJUMBOTRULY
 AWS_REGION=ap-southeast-2
